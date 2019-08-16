@@ -7,6 +7,7 @@ public class User {
     private String name;
     private String brithdate;
     private String error_msg;
+    private String avatarUrl;
 
     public User() {
 
@@ -50,5 +51,13 @@ public class User {
 
     public void setError_msg(String error_msg) {
         this.error_msg = error_msg;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

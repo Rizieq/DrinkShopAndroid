@@ -14,6 +14,7 @@ public class SessionManager {
     public static final String KEY_NAME = "name";
     public static final String KEY_ADDRESS = "address";
     public static final String KEY_BRITHDATE = "brithdate";
+    public static final String KEY_AVATAR_URL = "avatar";
     private static final String is_login = "logginstatus";
     private final String SHARE_NAME = "loginsession";
     private final int MODE_PRIVATE = 0;
@@ -27,13 +28,14 @@ public class SessionManager {
 
     }
 
-    public void storeLogin(String phone, String name, String address, String brithdate)
+    public void storeLogin(String phone, String name, String address, String brithdate, String avatar)
     {
         editor.putBoolean(is_login,true);
         editor.putString(KEY_PHONE,phone);
         editor.putString(KEY_NAME,name);
         editor.putString(KEY_ADDRESS,address);
         editor.putString(KEY_BRITHDATE,brithdate);
+        editor.putString(KEY_AVATAR_URL,avatar);
         editor.commit();
 
     }
@@ -45,6 +47,7 @@ public class SessionManager {
         map.put(KEY_NAME, sp.getString(KEY_NAME,null));
         map.put(KEY_ADDRESS, sp.getString(KEY_ADDRESS,null));
         map.put(KEY_BRITHDATE, sp.getString(KEY_BRITHDATE,null));
+        map.put(KEY_AVATAR_URL, sp.getString(KEY_AVATAR_URL,null));
         return map;
     }
 

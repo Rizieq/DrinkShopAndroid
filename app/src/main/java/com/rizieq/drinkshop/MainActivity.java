@@ -1,11 +1,14 @@
 package com.rizieq.drinkshop;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -42,20 +45,40 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 1000;
+    private static final int REQUEST_PERMISIION = 1001;
     Button btn_continue;
 
     IDrinkShopAPI mService;
     private SessionManager sm;
 
 
-
-
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode)
+        {
+            case REQUEST_PERMISIION:
+            {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, "Permisiion Granted", Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(this, "Permisiion Denied", Toast.LENGTH_SHORT).show();
+            }
+                break;
+                default:
+                    break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this,new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            },REQUEST_PERMISIION);
 
         mService = Common.getAPI();
         sm = new SessionManager(MainActivity.this);
@@ -97,13 +120,16 @@ public class MainActivity extends AppCompatActivity {
 
                                                         // If User already exits , Just start new Activity
                                                         alertDialog.dismiss();
+
+                                                        Log.d("RESPONSE_1","adsahdohasdas");
                                                         Common.currentUser = response.body();
 
                                                         User user = response.body();
                                                         sm.storeLogin(user.getPhone(),
                                                                 user.getName(),
                                                                 user.getAddress(),
-                                                                user.getBrithdate());
+                                                                user.getBrithdate(),
+                                                                user.getAvatarUrl());
 
                                                         startActivity(new Intent(MainActivity.this,HomeActivity.class));
                                                         finish(); //Close MainActivity
@@ -168,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
                     final AlertDialog alertDialog = new SpotsDialog(MainActivity.this);
                     alertDialog.show();
                     alertDialog.setMessage("Please Waiting...");
-
                     // Get User and check exits on Server
                     AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
                         @Override
@@ -192,11 +217,14 @@ public class MainActivity extends AppCompatActivity {
                                                                 // If User already exits , Just start new Activity
                                                                 alertDialog.dismiss();
 
+                                                                Log.d("RESPONSE_2 ","dsahdaushduhas");
+
                                                                 User user = response.body();
                                                                 sm.storeLogin(user.getPhone(),
                                                                         user.getName(),
                                                                         user.getAddress(),
-                                                                        user.getBrithdate());
+                                                                        user.getBrithdate(),
+                                                                        user.getAvatarUrl());
 
 
                                                                 startActivity(new Intent(MainActivity.this,HomeActivity.class));
@@ -279,7 +307,6 @@ public class MainActivity extends AppCompatActivity {
                 final AlertDialog waitingDialog = new SpotsDialog(MainActivity.this);
                 waitingDialog.show();
                 waitingDialog.setMessage("Please Waiting...");
-
                 mService.registerNewUser(phone,
                         edt_name.getText().toString(),
                         edt_address.getText().toString(),
@@ -293,11 +320,13 @@ public class MainActivity extends AppCompatActivity {
                                     Toast.makeText(MainActivity.this, "User Register Successfuly", Toast.LENGTH_SHORT).show();
                                     Common.currentUser = response.body();
                                     Log.d("NAME RESPON ",response.body().getName());
+                                    Log.d("RESPONSE_3","dasddasdasdasd");
 
                                     sm.storeLogin(user.getPhone(),
                                             user.getName(),
                                             user.getAddress(),
-                                            user.getBrithdate());
+                                            user.getBrithdate(),
+                                            user.getAvatarUrl());
 
                                     // start new Activity
                                     startActivity(new Intent(MainActivity.this,HomeActivity.class));

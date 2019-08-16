@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Common {
 
-    private static final String BASE_URL = "http://192.168.0.113/drinkshop/";
+    public static final String BASE_URL = "http://192.168.43.4/drinkshop/";
 
     public static final String TOPPING_MENU_ID = "7";
 

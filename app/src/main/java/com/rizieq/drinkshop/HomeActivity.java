@@ -1,11 +1,15 @@
 package com.rizieq.drinkshop;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
@@ -24,6 +28,7 @@ import android.widget.Toast;
 import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.SliderTypes.TextSliderView;
+import com.ipaulpro.afilechooser.utils.FileUtils;
 import com.nex3z.notificationbadge.NotificationBadge;
 import com.rizieq.drinkshop.Adapter.CategoryAdapter;
 import com.rizieq.drinkshop.Database.DataSource.CartRepository;
@@ -32,20 +37,31 @@ import com.rizieq.drinkshop.Database.Local.CartDatabase;
 import com.rizieq.drinkshop.Model.Banner;
 import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
+import com.rizieq.drinkshop.Model.User;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
 import com.rizieq.drinkshop.Utils.Common;
+import com.rizieq.drinkshop.Utils.ProggressRequestBody;
+import com.rizieq.drinkshop.Utils.UploadCallBack;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.MultipartBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, UploadCallBack {
 
+    private static final int PICK_FILE_REQUEST = 1222;
     TextView txt_name, txt_phone;
     SessionManager sm;
     SliderLayout sliderLayout;
@@ -56,6 +72,12 @@ public class HomeActivity extends AppCompatActivity
 
     NotificationBadge badge;
     ImageView cart_icon;
+
+
+    CircleImageView img_avatar;
+
+    Uri selectedFileUri;
+
 
 
     //RxJava
@@ -101,11 +123,33 @@ public class HomeActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         txt_name = headerView.findViewById(R.id.tv_name);
         txt_phone = headerView.findViewById(R.id.tv_phone);
+        img_avatar = headerView.findViewById(R.id.img_avatar);
 
+
+        // Event OnClick IMAGE AVATAR
+        img_avatar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseImage();
+            }
+        });
 
         // Set Info User
         txt_name.setText(map.get(sm.KEY_NAME));
         txt_phone.setText(map.get(sm.KEY_PHONE));
+
+
+        Log.d("BERHASIL_LOAD ",map.get(sm.KEY_PHONE));
+
+        // Set Avatar
+        if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL)))
+        {
+            Picasso.with(this)
+                    .load(new StringBuilder(Common.BASE_URL)
+                    .append("user_avatar/")
+                    .append(map.get(sm.KEY_AVATAR_URL)).toString())
+                    .into(img_avatar);
+        }
 
         // Get Banner
         getBannerImage();
@@ -120,6 +164,106 @@ public class HomeActivity extends AppCompatActivity
         initDB();
 
         sm.checkLogin();
+    }
+
+
+
+    private void chooseImage() {
+
+        // TODO to active FileUtils, we need add aFileChooser module to our project
+        startActivityForResult(Intent.createChooser(FileUtils.createGetContentIntent(),"Select a file"),
+                PICK_FILE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK)
+        {
+            if (requestCode ==PICK_FILE_REQUEST)
+            {
+                if (data != null)
+                {
+                    selectedFileUri = data.getData();
+                    if (selectedFileUri != null && !selectedFileUri.getPath().isEmpty())
+                    {
+                        img_avatar.setImageURI(selectedFileUri);
+                        uploadFile();
+                    }
+                    else
+                        Toast.makeText(this, "Cannot upload file to server", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    private void uploadFile() {
+        final HashMap<String, String> map = sm.getDataLogin();
+        if (selectedFileUri != null)
+        {
+            File file = FileUtils.getFile(this,selectedFileUri);
+            String fileName = new StringBuilder(map.get(sm.KEY_PHONE)) // get phone kalo gk dapet ambil dari session manager
+                    .append(FileUtils.getExtension(file.toString()))
+                    .toString();
+
+            ProggressRequestBody requestFile = new ProggressRequestBody(file,this);
+
+            final MultipartBody.Part body = MultipartBody.Part.createFormData("uploaded_file",fileName,requestFile);
+
+            final MultipartBody.Part userPhone = MultipartBody.Part.createFormData("phone",map.get(sm.KEY_PHONE));
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mService.uploadFile(userPhone,body)
+                            .enqueue(new Callback<String>() {
+                                @Override
+                                public void onResponse(Call<String> call, Response<String> response) {
+
+                                    if (response.isSuccessful()){
+
+                                        final String responUpload = response.body();
+
+                                        mService.getUserInformation(map.get(sm.KEY_PHONE))
+                                                .enqueue(new Callback<User>() {
+                                                    @Override
+                                                    public void onResponse(Call<User> call, Response<User> response) {
+
+                                                        User user = response.body();
+                                                        sm.storeLogin(user.getPhone(),
+                                                                user.getName(),
+                                                                user.getAddress(),
+                                                                user.getBrithdate(),
+                                                                user.getAvatarUrl());
+
+                                                        Toast.makeText(HomeActivity.this, responUpload, Toast.LENGTH_SHORT).show();
+
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<User> call, Throwable t) {
+
+                                                        Log.d("ONFAILURE_USER_MAIN ",t.getLocalizedMessage());
+                                                        Toast.makeText(HomeActivity.this, "Failed To Save Data", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+
+
+                                    }
+
+
+
+
+                                }
+
+                                @Override
+                                public void onFailure(Call<String> call, Throwable t) {
+                                    Toast.makeText(HomeActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }).start();
+        }
     }
 
     private void initDB() {
@@ -286,5 +430,12 @@ public class HomeActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         updateCartCount();
+
+
+    }
+
+    @Override
+    public void onProggressUpdate(int percentage) {
+
     }
 }
