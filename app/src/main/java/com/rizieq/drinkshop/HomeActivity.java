@@ -1,6 +1,8 @@
 package com.rizieq.drinkshop;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -139,7 +141,7 @@ public class HomeActivity extends AppCompatActivity
         txt_phone.setText(map.get(sm.KEY_PHONE));
 
 
-        Log.d("BERHASIL_LOAD ",map.get(sm.KEY_PHONE));
+        /*Log.d("BERHASIL_LOAD ",map.get(sm.KEY_PHONE));*/
 
         // Set Avatar
         if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL)))
@@ -342,13 +344,19 @@ public class HomeActivity extends AppCompatActivity
 
     }
 
+    boolean isBackButtonClicked = false;
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if (isBackButtonClicked){
+                super.onBackPressed();
+                return;
+            }
+            this.isBackButtonClicked = true;
+            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -407,17 +415,38 @@ public class HomeActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_sign_out) {
+            // Create confirm Dialog
 
-        } else if (id == R.id.nav_slideshow) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Exit Aplication");
+            builder.setMessage("Do you want to exit this aplication ?");
 
-        } else if (id == R.id.nav_tools) {
+            builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
 
-        } else if (id == R.id.nav_share) {
+                    sm.logout();
+                    sm.checkLogin();
+                    finish();
+                    /*// Clear all Activity
+                    Intent intent = new Intent(HomeActivity.this,MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        } else if (id == R.id.nav_send) {
+                    startActivity(intent);
+                    finish();*/
+                }
+            });
+
+            builder.setPositiveButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            // Show Dialog
+            builder.show();
 
         }
 
@@ -430,6 +459,7 @@ public class HomeActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         updateCartCount();
+        isBackButtonClicked = false;
 
 
     }
@@ -438,4 +468,6 @@ public class HomeActivity extends AppCompatActivity
     public void onProggressUpdate(int percentage) {
 
     }
+
+
 }

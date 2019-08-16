@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                                     } else {
                                         // Else , Need Register
                                         alertDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, response.body().getError_msg(), Toast.LENGTH_LONG).show();
+                                        Toast.makeText(MainActivity.this, "Register Lagi", Toast.LENGTH_LONG).show();
 
 
                                         showRegisterDialog(account.getPhoneNumber().toString());
@@ -365,5 +365,25 @@ public class MainActivity extends AppCompatActivity {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+    }
+
+    // Exit Application when click BACK Button
+
+    boolean isBackButtonClicked = false;
+
+    @Override
+    public void onBackPressed() {
+        if (isBackButtonClicked){
+            super.onBackPressed();
+            return;
+        }
+        this.isBackButtonClicked = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        isBackButtonClicked = false;
+        super.onResume();
     }
 }
