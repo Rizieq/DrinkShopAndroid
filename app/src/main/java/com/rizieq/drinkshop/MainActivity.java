@@ -309,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onFailure(Call<User> call, Throwable t) {
                                 waitingDialog.dismiss();
+
                             }
                         });
             }
