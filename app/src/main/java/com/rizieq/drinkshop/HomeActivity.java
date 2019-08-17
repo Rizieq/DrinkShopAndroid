@@ -35,7 +35,7 @@ import com.nex3z.notificationbadge.NotificationBadge;
 import com.rizieq.drinkshop.Adapter.CategoryAdapter;
 import com.rizieq.drinkshop.Database.DataSource.CartRepository;
 import com.rizieq.drinkshop.Database.Local.CartDataSource;
-import com.rizieq.drinkshop.Database.Local.CartDatabase;
+import com.rizieq.drinkshop.Database.Local.EDMTRoomDatabase;
 import com.rizieq.drinkshop.Model.Banner;
 import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
@@ -269,8 +269,8 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void initDB() {
-        Common.cartDatabase = CartDatabase.getInstance(this);
-        Common.cartRepository = CartRepository.getInstance(CartDataSource.getInstance(Common.cartDatabase.cartDAO()));
+        Common.EDMTRoomDatabase = EDMTRoomDatabase.getInstance(this);
+        Common.cartRepository = CartRepository.getInstance(CartDataSource.getInstance(Common.EDMTRoomDatabase.cartDAO()));
     }
 
     private void getToppingList() {

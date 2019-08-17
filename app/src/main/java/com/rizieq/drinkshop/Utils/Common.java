@@ -1,7 +1,7 @@
 package com.rizieq.drinkshop.Utils;
 
 import com.rizieq.drinkshop.Database.DataSource.CartRepository;
-import com.rizieq.drinkshop.Database.Local.CartDatabase;
+import com.rizieq.drinkshop.Database.Local.EDMTRoomDatabase;
 import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
 import com.rizieq.drinkshop.Model.User;
@@ -32,7 +32,7 @@ public class Common {
 
 
     // Databse
-    public static CartDatabase cartDatabase;
+    public static EDMTRoomDatabase EDMTRoomDatabase;
     public static CartRepository cartRepository;
 
     public static IDrinkShopAPI getAPI()

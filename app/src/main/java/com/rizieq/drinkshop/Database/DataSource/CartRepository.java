@@ -1,7 +1,5 @@
 package com.rizieq.drinkshop.Database.DataSource;
 
-import com.rizieq.drinkshop.Database.Local.CartDAO;
-import com.rizieq.drinkshop.Database.Local.CartDatabase;
 import com.rizieq.drinkshop.Database.ModelDB.Cart;
 
 import java.util.List;
