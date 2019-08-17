@@ -3,7 +3,7 @@
     package="com.rizieq.drinkshop">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CartActivity"></activity>
+        <activity android:name=".FavoriteListActivity"></activity>
+        <activity android:name=".CartActivity" />
         <activity android:name=".DrinkActivity" />
         <activity
             android:name=".MainActivity"
