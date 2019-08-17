@@ -34,8 +34,10 @@ import com.ipaulpro.afilechooser.utils.FileUtils;
 import com.nex3z.notificationbadge.NotificationBadge;
 import com.rizieq.drinkshop.Adapter.CategoryAdapter;
 import com.rizieq.drinkshop.Database.DataSource.CartRepository;
+import com.rizieq.drinkshop.Database.DataSource.FavoriteRepository;
 import com.rizieq.drinkshop.Database.Local.CartDataSource;
 import com.rizieq.drinkshop.Database.Local.EDMTRoomDatabase;
+import com.rizieq.drinkshop.Database.Local.FavoriteDataSource;
 import com.rizieq.drinkshop.Model.Banner;
 import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
@@ -269,8 +271,9 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void initDB() {
-        Common.EDMTRoomDatabase = EDMTRoomDatabase.getInstance(this);
-        Common.cartRepository = CartRepository.getInstance(CartDataSource.getInstance(Common.EDMTRoomDatabase.cartDAO()));
+        Common.edmtRoomDatabase = EDMTRoomDatabase.getInstance(this);
+        Common.cartRepository = CartRepository.getInstance(CartDataSource.getInstance(Common.edmtRoomDatabase.cartDAO()));
+        Common.favoriteRepository = FavoriteRepository.getInstance(FavoriteDataSource.getInstance(Common.edmtRoomDatabase.favoritetDAO()));
     }
 
     private void getToppingList() {
