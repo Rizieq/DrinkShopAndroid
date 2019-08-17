@@ -24,5 +24,6 @@ public class Favorite {
 
     @ColumnInfo(name = "menuId")
     public String menuId;
+
 }
 
