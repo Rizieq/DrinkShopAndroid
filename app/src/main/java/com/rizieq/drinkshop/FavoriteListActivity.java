@@ -49,7 +49,7 @@ public class FavoriteListActivity extends AppCompatActivity implements RecyclerI
 
         // This is for swipe Delete
         ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0,ItemTouchHelper.LEFT,this);
-        new ItemTouchHelper(simpleCallback).attachToRecyclerView(recycler_fav);;
+        new ItemTouchHelper(simpleCallback).attachToRecyclerView(recycler_fav);
 
         loadFavoritesItem();
 
