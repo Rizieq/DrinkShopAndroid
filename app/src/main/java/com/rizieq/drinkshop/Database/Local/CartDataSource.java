@@ -35,6 +35,16 @@ public class CartDataSource implements ICartDataSource {
     }
 
     @Override
+    public float sumPrice() {
+        return cartDAO.sumPrice();
+    }
+
+    @Override
+    public String sumName() {
+        return cartDAO.sumName();
+    }
+
+    @Override
     public int countCartItems() {
         return cartDAO.countCartItems();
     }

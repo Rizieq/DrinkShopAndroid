@@ -23,6 +23,13 @@ public interface CartDAO {
     @Query("SELECT Count(*) FROM Cart")
     int countCartItems();
 
+    @Query("SELECT SUM(Price) FROM Cart")
+    float sumPrice();
+
+    // coba
+    @Query("SELECT SUM(Name) FROM Cart")
+    String sumName();
+
     @Query("DELETE FROM Cart")
     void emptyCart();
 
