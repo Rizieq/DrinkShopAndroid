@@ -38,7 +38,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CartViewHolder cartViewHolder, final int i) {
+    public void onBindViewHolder(@NonNull final CartViewHolder cartViewHolder, final int i) {
 
         Picasso.with(context)
                 .load(cartList.get(i).link)
@@ -46,11 +46,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
         cartViewHolder.txt_amount.setNumber(String.valueOf(cartList.get(i).amount));
         cartViewHolder.txt_price.setText(new StringBuilder("$").append(cartList.get(i).price));
-        cartViewHolder.txt_product_name.setText(cartList.get(i).name);
+        cartViewHolder.txt_product_name.setText(new StringBuilder(cartList.get(i).name)
+        .append(" x")
+        .append(cartList.get(i).amount)
+        .append(cartList.get(i).size == 0 ? " Size M":"Size L"));
+
         cartViewHolder.txt_sugar_ice.setText(new StringBuilder("Sugar: ")
         .append(cartList.get(i).sugar).append("%").append("\n")
         .append("Ice: ").append(cartList.get(i).ice)
         .append("%").toString());
+
+        // GET Price of one Cup with all options
+        final double priceOneCup = cartList.get(i).price / cartList.get(i).amount;
 
 
         // AUTO SAVE WHEN USER CHANGE AMOUNT
@@ -60,8 +67,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
                 Cart cart = cartList.get(i);
                 cart.amount = newValue;
+                cart.price = Math.round(priceOneCup*newValue);
 
                 Common.cartRepository.updateCart(cart);
+
+                cartViewHolder.txt_price.setText(new StringBuilder("$").append(cartList.get(i).price));
             }
         });
 

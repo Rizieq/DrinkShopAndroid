@@ -42,7 +42,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
     @NonNull
     @Override
     public DrinkViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View view = LayoutInflater.from(context).inflate(R.layout.drink_item_layout,null);
+        View view = LayoutInflater.from(context).inflate(R.layout.drink_item_layout, null);
         return new DrinkViewHolder(view);
     }
 
@@ -82,14 +82,11 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
             @Override
             public void onClick(View v) {
 
-                if (Common.favoriteRepository.isFavorite(Integer.parseInt(drinkList.get(i).ID)) != 1)
-                {
-                    addOrRemoveFavorite(drinkList.get(i),true);
+                if (Common.favoriteRepository.isFavorite(Integer.parseInt(drinkList.get(i).ID)) != 1) {
+                    addOrRemoveFavorite(drinkList.get(i), true);
                     drinkViewHolder.btn_favorites.setImageResource(R.drawable.ic_favorite_white_24dp);
-                }
-                else
-                {
-                    addOrRemoveFavorite(drinkList.get(i),false);
+                } else {
+                    addOrRemoveFavorite(drinkList.get(i), false);
                     drinkViewHolder.btn_favorites.setImageResource(R.drawable.ic_favorite_border_white_24dp);
                 }
             }
@@ -115,7 +112,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
     private void showAddToCartDialog(final int i) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View itemView = LayoutInflater.from(context)
-                .inflate(R.layout.add_to_cart_layout,null);
+                .inflate(R.layout.add_to_cart_layout, null);
 
         // View
         ImageView img_product_dialog = itemView.findViewById(R.id.img_cart_product);
@@ -131,7 +128,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked)
-                    Common.sizeOfCup=0;
+                    Common.sizeOfCup = 0;
             }
         });
 
@@ -139,7 +136,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked)
-                    Common.sizeOfCup=1;
+                    Common.sizeOfCup = 1;
             }
         });
 
@@ -248,26 +245,23 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                if (Common.sizeOfCup == -1)
-                {
+                if (Common.sizeOfCup == -1) {
                     Toast.makeText(context, "Please choose size of cup", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if (Common.sugar == -1)
-                {
+                if (Common.sugar == -1) {
                     Toast.makeText(context, "Please choose sugar", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if (Common.ice == -1)
-                {
+                if (Common.ice == -1) {
                     Toast.makeText(context, "Please choose ice", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
 
-                showConfirmDialog(i,txt_count.getNumber());
+                showConfirmDialog(i, txt_count.getNumber());
                 dialog.dismiss();
             }
         });
@@ -279,8 +273,8 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
     private void showConfirmDialog(final int i, final String number) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View itemView = LayoutInflater.from(context)
-                .inflate(R.layout.confirm_add_to_cart_layout,null);
-        
+                .inflate(R.layout.confirm_add_to_cart_layout, null);
+
         // View
         ImageView img_product_dialog = itemView.findViewById(R.id.img_product);
         final TextView txt_product_dialog = itemView.findViewById(R.id.txt_cart_product_name);
@@ -288,35 +282,39 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
         TextView txt_sugar = itemView.findViewById(R.id.txt_sugar);
         TextView txt_ice = itemView.findViewById(R.id.txt_ice);
         final TextView txt_topping_extra = itemView.findViewById(R.id.txt_topping_extra);
-        
+
         // Set Data
         Picasso.with(context).load(drinkList.get(i).Link).into(img_product_dialog);
         txt_product_dialog.setText(new StringBuilder(drinkList.get(i).Name).append(" x")
-        .append(number)
-        .append(Common.sizeOfCup == 0 ? " Size M":" Size L").toString());
+                .append(Common.sizeOfCup == 0 ? " Size M" : " Size L")
+                .append(number));
+
+
         txt_ice.setText(new StringBuilder("Ice: ").append(Common.ice).append("%").toString());
         txt_sugar.setText(new StringBuilder("Sugar: ").append(Common.sugar).append("%").toString());
-        
-        double price = (Double.parseDouble(drinkList.get(i).Price)* Double.parseDouble(number)) + Common.toppingPrice;
-        
+
+        double price = (Double.parseDouble(drinkList.get(i).Price) * Double.parseDouble(number)) + Common.toppingPrice;
+
         if (Common.sizeOfCup == 1) // Size L
-            price += 3.0;
-        
-        txt_product_price.setText(new StringBuilder("$").append(price));
-        
+            price += (3.0 * Double.parseDouble(number));
+
+
+
         StringBuilder topping_final_comment = new StringBuilder("");
-        for (String line:Common.toppingAdded)
+        for (String line : Common.toppingAdded)
             topping_final_comment.append(line).append("\n");
-        
+
         txt_topping_extra.setText(topping_final_comment);
 
-        final double finalPrice = price;
+        final double finalPrice = Math.round(price);
+
+        txt_product_price.setText(new StringBuilder("$").append(finalPrice));
+
         builder.setNegativeButton("CONFIRM", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
                 dialog.dismiss();
-
 
 
                 try {
@@ -325,11 +323,12 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
                     // Add to SQLITE
                     // CREATE NEW CART ITEM
                     Cart cartItem = new Cart();
-                    cartItem.name = txt_product_dialog.getText().toString();
+                    cartItem.name = drinkList.get(i).Name;
                     cartItem.amount = Integer.parseInt(number);
                     cartItem.ice = Common.ice;
                     cartItem.sugar = Common.sugar;
                     cartItem.price = finalPrice;
+                    cartItem.size = Common.sizeOfCup;
                     cartItem.toppingExtras = txt_topping_extra.getText().toString();
                     cartItem.link = drinkList.get(i).Link;
 
@@ -338,21 +337,20 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
 
                     Log.d("EDMT_DEBUG", new Gson().toJson(cartItem));
                     Toast.makeText(context, "Save item to cart Succes", Toast.LENGTH_SHORT).show();
-                }
-                catch (Exception ex){
+                } catch (Exception ex) {
                     Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
-        
+
         builder.setView(itemView);
         builder.show();
-        
+
     }
 
     @Override
     public int getItemCount() {
-        return drinkList.size() ;
+        return drinkList.size();
     }
 }
