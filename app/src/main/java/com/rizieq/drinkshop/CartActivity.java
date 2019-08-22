@@ -1,6 +1,7 @@
 package com.rizieq.drinkshop;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -92,83 +93,112 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
     }
 
     private void placeOrder() {
-        // CREATE Dialog
 
+        // Bisa juga menggunakan kondisi dari Session manager
         final HashMap<String, String> map = sm.getDataLogin();
+        // map.get(sm.KEY_PHONE)
+        // If Kondisi untuk mengetahui apakah user sudah login atau belum
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Submit Order");
-
-        View submit_order_layout = LayoutInflater.from(this).inflate(R.layout.submit_order_layout,null);
-
-        final EditText edt_comment = submit_order_layout.findViewById(R.id.edt_comment);
-        final EditText edt_other_address = submit_order_layout.findViewById(R.id.edt_other_address);
-
-        final RadioButton rdi_user_address = submit_order_layout.findViewById(R.id.rdi_user_address);
-        final RadioButton rdi_other_address = submit_order_layout.findViewById(R.id.rdi_other_address);
-
-        rdi_user_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked)
-                    edt_other_address.setEnabled(false);
-            }
-        });
-
-        rdi_other_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked)
-                    edt_other_address.setEnabled(true);
-            }
-        });
-
-        builder.setView(submit_order_layout);
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        }).setPositiveButton("SUBMIT", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                // todo ganti sum price dengan sumName
-
-                final String orderComment = edt_comment.getText().toString();
-                final String orderAddress;
-
-                if (rdi_user_address.isChecked())
-                    orderAddress = map.get(sm.KEY_ADDRESS);
-                else if (rdi_other_address.isChecked())
-                    orderAddress = edt_other_address.getText().toString();
-                else
-                    orderAddress = "";
+        if (Common.currentUser != null) {
+            // CREATE Dialog
 
 
-                // Submit Order
-                compositeDisposable.add(
-                        Common.cartRepository.getCartItems()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(new Consumer<List<Cart>>() {
-                            @Override
-                            public void accept(List<Cart> carts) throws Exception {
 
-                                if (!TextUtils.isEmpty(orderAddress))
-                                    sendOrderToServer(Common.cartRepository.sumPrice(),
-                                            carts,
-                                            orderComment,orderAddress);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Submit Order");
 
-                                else
-                                    Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                );
-            }
-        });
+            View submit_order_layout = LayoutInflater.from(this).inflate(R.layout.submit_order_layout, null);
 
-        builder.show();
+            final EditText edt_comment = submit_order_layout.findViewById(R.id.edt_comment);
+            final EditText edt_other_address = submit_order_layout.findViewById(R.id.edt_other_address);
+
+            final RadioButton rdi_user_address = submit_order_layout.findViewById(R.id.rdi_user_address);
+            final RadioButton rdi_other_address = submit_order_layout.findViewById(R.id.rdi_other_address);
+
+            rdi_user_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked)
+                        edt_other_address.setEnabled(false);
+                }
+            });
+
+            rdi_other_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked)
+                        edt_other_address.setEnabled(true);
+                }
+            });
+
+            builder.setView(submit_order_layout);
+            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).setPositiveButton("SUBMIT", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                    // todo ganti sum price dengan sumName
+
+                    final String orderComment = edt_comment.getText().toString();
+                    final String orderAddress;
+
+                    if (rdi_user_address.isChecked())
+                        orderAddress = map.get(sm.KEY_ADDRESS);
+                    else if (rdi_other_address.isChecked())
+                        orderAddress = edt_other_address.getText().toString();
+                    else
+                        orderAddress = "";
+
+
+                    // Submit Order
+                    compositeDisposable.add(
+                            Common.cartRepository.getCartItems()
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribeOn(Schedulers.io())
+                                    .subscribe(new Consumer<List<Cart>>() {
+                                        @Override
+                                        public void accept(List<Cart> carts) throws Exception {
+
+                                            if (!TextUtils.isEmpty(orderAddress))
+                                                sendOrderToServer(Common.cartRepository.sumPrice(),
+                                                        carts,
+                                                        orderComment, orderAddress);
+
+                                            else
+                                                Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                    );
+                }
+            });
+
+            builder.show();
+        }
+        else
+        {
+            // Request Login
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(CartActivity.this);
+            builder.setTitle("NOT LOGIN ?");
+            builder.setMessage("Please login or register login to submit order");
+            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    startActivity(new Intent(CartActivity.this,MainActivity.class));
+                    finish();
+                }
+            }).show();
+        }
 
     }
 
@@ -189,6 +219,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
                             // Clear Cart
                             Common.cartRepository.emptyCart();
+                            finish();
                         }
 
                         @Override

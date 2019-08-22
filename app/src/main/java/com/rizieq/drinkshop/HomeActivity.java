@@ -30,6 +30,10 @@ import android.widget.Toast;
 import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.SliderTypes.TextSliderView;
+import com.facebook.accountkit.Account;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 import com.nex3z.notificationbadge.NotificationBadge;
 import com.rizieq.drinkshop.Adapter.CategoryAdapter;
@@ -40,6 +44,7 @@ import com.rizieq.drinkshop.Database.Local.EDMTRoomDatabase;
 import com.rizieq.drinkshop.Database.Local.FavoriteDataSource;
 import com.rizieq.drinkshop.Model.Banner;
 import com.rizieq.drinkshop.Model.Category;
+import com.rizieq.drinkshop.Model.CheckUserResponse;
 import com.rizieq.drinkshop.Model.Drink;
 import com.rizieq.drinkshop.Model.User;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
@@ -53,6 +58,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import dmax.dialog.SpotsDialog;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.functions.Consumer;
@@ -138,22 +144,22 @@ public class HomeActivity extends AppCompatActivity
             }
         });
 
-        // Set Info User
-        txt_name.setText(map.get(sm.KEY_NAME));
-        txt_phone.setText(map.get(sm.KEY_PHONE));
+
+            // Set Info User
+            txt_name.setText(map.get(sm.KEY_NAME));
+            txt_phone.setText(map.get(sm.KEY_PHONE));
 
 
-        /*Log.d("BERHASIL_LOAD ",map.get(sm.KEY_PHONE));*/
+            // Set Avatar
+            if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL))) {
+                Picasso.with(this)
+                        .load(new StringBuilder(Common.BASE_URL)
+                                .append("user_avatar/")
+                                .append(map.get(sm.KEY_AVATAR_URL)).toString())
+                        .into(img_avatar);
+            }
 
-        // Set Avatar
-        if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL)))
-        {
-            Picasso.with(this)
-                    .load(new StringBuilder(Common.BASE_URL)
-                    .append("user_avatar/")
-                    .append(map.get(sm.KEY_AVATAR_URL)).toString())
-                    .into(img_avatar);
-        }
+
 
         // Get Banner
         getBannerImage();
@@ -167,9 +173,76 @@ public class HomeActivity extends AppCompatActivity
         // Init SQLITE Room Database
         initDB();
 
+        // IF user already loged, just login again (Session still live)
+        /*checkSessionLogin(); */
+
         sm.checkLogin();
     }
 
+    private void checkSessionLogin() {
+        if (AccountKit.getCurrentAccessToken() != null){
+            final AlertDialog dialog = new SpotsDialog(HomeActivity.this);
+            dialog.show();
+            dialog.setMessage("Please Waiting .....");
+
+            // Check exits User on Server (MYSQL)
+            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+                @Override
+                public void onSuccess(final Account account) {
+                    mService.checkUserExits(account.getPhoneNumber().toString())
+                            .enqueue(new Callback<CheckUserResponse>() {
+                                @Override
+                                public void onResponse(Call<CheckUserResponse> call, Response<CheckUserResponse> response) {
+                                    CheckUserResponse userResponse = response.body();
+                                    if (userResponse.isExits()){
+
+
+                                        // Request Information of current User
+                                        mService.getUserInformation(account.getPhoneNumber().toString())
+                                                .enqueue(new Callback<User>() {
+                                                    @Override
+                                                    public void onResponse(Call<User> call, Response<User> response) {
+                                                        if (Common.currentUser != null){
+                                                            dialog.dismiss();
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<User> call, Throwable t) {
+                                                        dialog.dismiss();
+                                                        Log.d("ERRO#_3 ",t.getMessage());
+                                                    }
+                                                });
+                                    }
+                                    else
+                                    {
+
+                                        // If user not exits on Database, just make login
+                                        startActivity(new Intent(HomeActivity.this,MainActivity.class));
+                                        finish();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<CheckUserResponse> call, Throwable t) {
+
+                                    dialog.dismiss();
+                                    Log.d("ERROR_2 ",t.getMessage());
+                                }
+                            });
+                }
+
+                @Override
+                public void onError(AccountKitError accountKitError) {
+
+                    dialog.dismiss();
+                    Log.d("ERROR_3 ",accountKitError.getErrorType().getMessage());
+
+                }
+            });
+
+        }
+    }
 
 
     private void chooseImage() {
