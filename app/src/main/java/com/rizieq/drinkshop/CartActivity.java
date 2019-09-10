@@ -63,7 +63,15 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-        Log.d("RESPONSE_NAME ",Common.cartRepository.sumName());
+        if (Common.cartRepository.sumName() != null){
+            Log.d("RESPONSE_NAME ",Common.cartRepository.sumName());    
+        }
+        else 
+        {
+            Toast.makeText(this, "Must Add To Cart !", Toast.LENGTH_SHORT).show();
+        }
+        
+        
 
         sm = new SessionManager(CartActivity.this);
 

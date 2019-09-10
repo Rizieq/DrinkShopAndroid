@@ -532,6 +532,10 @@ public class HomeActivity extends AppCompatActivity
         {
             startActivity(new Intent(this,FavoriteListActivity.class));
         }
+        else if (id == R.id.nav_show_orders)
+        {
+            startActivity(new Intent(this,ShowOrderActivity.class));
+        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
