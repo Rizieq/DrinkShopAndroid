@@ -1,5 +1,6 @@
 package com.rizieq.drinkshop;
 
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -27,6 +28,8 @@ public class DrinkActivity extends AppCompatActivity {
 
     TextView txt_banner_name;
 
+
+    SwipeRefreshLayout swipeRefreshLayout;
     // Rxjava
     CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -37,13 +40,32 @@ public class DrinkActivity extends AppCompatActivity {
 
         mService = Common.getAPI();
 
+        swipeRefreshLayout = findViewById(R.id.swipe_to_refresh);
+
         lst_drink = findViewById(R.id.recycler_drinks);
         lst_drink.setLayoutManager(new GridLayoutManager(this,2));
         lst_drink.setHasFixedSize(true);
 
         txt_banner_name = findViewById(R.id.txt_menu_name);
+        txt_banner_name.setText(Common.currentCategory.Name);
 
-        loadListDrink(Common.currentCategory.ID);
+
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+
+                loadListDrink(Common.currentCategory.ID);
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                loadListDrink(Common.currentCategory.ID);
+            }
+        });
     }
 
     private void loadListDrink(String menuId) {
@@ -64,6 +86,8 @@ public class DrinkActivity extends AppCompatActivity {
     private void displayDrinkList(List<Drink> drinks) {
         DrinkAdapter drinkAdapter = new DrinkAdapter(this,drinks);
         lst_drink.setAdapter(drinkAdapter);
+
+        swipeRefreshLayout.setRefreshing(false);
     }
 
 

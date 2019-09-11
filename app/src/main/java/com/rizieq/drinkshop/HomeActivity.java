@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -89,6 +90,7 @@ public class HomeActivity extends AppCompatActivity
     Uri selectedFileUri;
 
 
+    SwipeRefreshLayout swipeRefreshLayout;
 
     //RxJava
     CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -100,6 +102,8 @@ public class HomeActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
 
         mService = Common.getAPI();
+
+        swipeRefreshLayout = findViewById(R.id.swipe_to_refresh);
 
         lst_menu = findViewById(R.id.lst_menu);
         lst_menu.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -160,15 +164,40 @@ public class HomeActivity extends AppCompatActivity
             }
 
 
+            swipeRefreshLayout.post(new Runnable() {
+                @Override
+                public void run() {
 
-        // Get Banner
-        getBannerImage();
+                    // Get Banner
+                    getBannerImage();
 
-        // Get Menu
-        getMenu();
+                    // Get Menu
+                    getMenu();
 
-        // Save topping newest Topping List
-        getToppingList();
+                    // Save topping newest Topping List
+                    getToppingList();
+
+                }
+            });
+
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+
+                    swipeRefreshLayout.setRefreshing(true);
+
+                    // Get Banner
+                    getBannerImage();
+
+                    // Get Menu
+                    getMenu();
+
+                    // Save topping newest Topping List
+                    getToppingList();
+
+                }
+            });
+
 
         // Init SQLITE Room Database
         initDB();
@@ -181,9 +210,9 @@ public class HomeActivity extends AppCompatActivity
 
     private void checkSessionLogin() {
         if (AccountKit.getCurrentAccessToken() != null){
-            final AlertDialog dialog = new SpotsDialog(HomeActivity.this);
-            dialog.show();
-            dialog.setMessage("Please Waiting .....");
+
+
+            swipeRefreshLayout.setRefreshing(true);
 
             // Check exits User on Server (MYSQL)
             AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
@@ -202,14 +231,32 @@ public class HomeActivity extends AppCompatActivity
                                                 .enqueue(new Callback<User>() {
                                                     @Override
                                                     public void onResponse(Call<User> call, Response<User> response) {
+
+                                                        // TODO refresh informasi user saat swipe refresh di gunakan
+                                                        HashMap<String, String> map = sm.getDataLogin();
                                                         if (Common.currentUser != null){
-                                                            dialog.dismiss();
+                                                            swipeRefreshLayout.setRefreshing(false);
+
+                                                            // Set Info User
+                                                            txt_name.setText(map.get(sm.KEY_NAME));
+                                                            txt_phone.setText(map.get(sm.KEY_PHONE));
+
+
+                                                            // Set Avatar
+                                                            if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL))) {
+                                                                Picasso.with(getApplicationContext())
+                                                                        .load(new StringBuilder(Common.BASE_URL)
+                                                                                .append("user_avatar/")
+                                                                                .append(map.get(sm.KEY_AVATAR_URL)).toString())
+                                                                        .into(img_avatar);
+                                                            }
+
                                                         }
                                                     }
 
                                                     @Override
                                                     public void onFailure(Call<User> call, Throwable t) {
-                                                        dialog.dismiss();
+                                                        swipeRefreshLayout.setRefreshing(false);
                                                         Log.d("ERRO#_3 ",t.getMessage());
                                                     }
                                                 });
@@ -226,7 +273,7 @@ public class HomeActivity extends AppCompatActivity
                                 @Override
                                 public void onFailure(Call<CheckUserResponse> call, Throwable t) {
 
-                                    dialog.dismiss();
+                                    swipeRefreshLayout.setRefreshing(false);
                                     Log.d("ERROR_2 ",t.getMessage());
                                 }
                             });
@@ -235,12 +282,20 @@ public class HomeActivity extends AppCompatActivity
                 @Override
                 public void onError(AccountKitError accountKitError) {
 
-                    dialog.dismiss();
+                    swipeRefreshLayout.setRefreshing(false);
                     Log.d("ERROR_3 ",accountKitError.getErrorType().getMessage());
 
                 }
             });
 
+        }
+        else
+        {
+
+            // Saat akun belum login maka akan logout langsung
+            sm.logout();
+            sm.checkLogin();
+            finish();
         }
     }
 
@@ -377,6 +432,8 @@ public class HomeActivity extends AppCompatActivity
     private void displayMenu(List<Category> categories) {
         CategoryAdapter adapter = new CategoryAdapter(this, categories);
         lst_menu.setAdapter(adapter);
+
+        swipeRefreshLayout.setRefreshing(false);
     }
 
 
