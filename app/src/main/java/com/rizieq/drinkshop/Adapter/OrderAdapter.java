@@ -36,7 +36,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderViewHolder> {
         orderViewHolder.txt_order_price.setText(new StringBuilder("$").append(orderList.get(i).getOrderPrice()));
         orderViewHolder.txt_order_address.setText(orderList.get(i).getOrderAddress());
         orderViewHolder.txt_order_comment.setText(orderList.get(i).getOrderComment());
-        orderViewHolder.txt_order_status.setText(new StringBuilder("Order Status: ").append(Common.convertToCodeStatus(orderList.get(i).getOrderStatus())));
+        orderViewHolder.txt_order_status.setText(new StringBuilder("Order Status : ").append(Common.convertToCodeStatus(orderList.get(i).getOrderStatus())));
     }
 
     @Override

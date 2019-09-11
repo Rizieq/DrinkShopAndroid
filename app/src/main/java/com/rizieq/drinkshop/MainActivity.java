@@ -55,18 +55,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode)
-        {
-            case REQUEST_PERMISIION:
-            {
+        switch (requestCode) {
+            case REQUEST_PERMISIION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     Toast.makeText(this, "Permisiion Granted", Toast.LENGTH_SHORT).show();
                 else
                     Toast.makeText(this, "Permisiion Denied", Toast.LENGTH_SHORT).show();
             }
+            break;
+            default:
                 break;
-                default:
-                    break;
         }
     }
 
@@ -76,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this,new String[]{
+            ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE
-            },REQUEST_PERMISIION);
+            }, REQUEST_PERMISIION);
 
         mService = Common.getAPI();
         sm = new SessionManager(MainActivity.this);
@@ -93,8 +91,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Check Session
-        if (AccountKit.getCurrentAccessToken() != null)
-        {
+        if (AccountKit.getCurrentAccessToken() != null) {
             final AlertDialog alertDialog = new SpotsDialog(MainActivity.this);
             alertDialog.show();
             alertDialog.setMessage("Please Waiting...");
@@ -121,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                                                         // If User already exits , Just start new Activity
                                                         alertDialog.dismiss();
 
-                                                        Log.d("RESPONSE_1","adsahdohasdas");
+                                                        Log.d("RESPONSE_1", "adsahdohasdas");
                                                         Common.currentUser = response.body();
 
                                                         User user = response.body();
@@ -131,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                                                                 user.getBrithdate(),
                                                                 user.getAvatarUrl());
 
-                                                        startActivity(new Intent(MainActivity.this,HomeActivity.class));
+                                                        startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                                         finish(); //Close MainActivity
                                                     }
 
@@ -217,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                                                                 // If User already exits , Just start new Activity
                                                                 alertDialog.dismiss();
 
-                                                                Log.d("RESPONSE_2 ","dsahdaushduhas");
+                                                                Log.d("RESPONSE_2 ", "dsahdaushduhas");
 
                                                                 User user = response.body();
                                                                 sm.storeLogin(user.getPhone(),
@@ -227,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                                                                         user.getAvatarUrl());
 
 
-                                                                startActivity(new Intent(MainActivity.this,HomeActivity.class));
+                                                                startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                                                 finish(); //Close MainActivity
                                                             }
 
@@ -319,8 +316,8 @@ public class MainActivity extends AppCompatActivity {
                                 if (TextUtils.isEmpty(user.getError_msg())) {
                                     Toast.makeText(MainActivity.this, "User Register Successfuly", Toast.LENGTH_SHORT).show();
                                     Common.currentUser = response.body();
-                                    Log.d("NAME RESPON ",response.body().getName());
-                                    Log.d("RESPONSE_3","dasddasdasdasd");
+                                    Log.d("NAME RESPON ", response.body().getName());
+                                    Log.d("RESPONSE_3", "dasddasdasdasd");
 
                                     sm.storeLogin(user.getPhone(),
                                             user.getName(),
@@ -329,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
                                             user.getAvatarUrl());
 
                                     // start new Activity
-                                    startActivity(new Intent(MainActivity.this,HomeActivity.class));
+                                    startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                     finish();
                                 }
 
@@ -373,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (isBackButtonClicked){
+        if (isBackButtonClicked) {
             super.onBackPressed();
             return;
         }
