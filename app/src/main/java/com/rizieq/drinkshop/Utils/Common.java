@@ -5,6 +5,7 @@ import com.rizieq.drinkshop.Database.DataSource.FavoriteRepository;
 import com.rizieq.drinkshop.Database.Local.EDMTRoomDatabase;
 import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
+import com.rizieq.drinkshop.Model.Order;
 import com.rizieq.drinkshop.Model.User;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
 import com.rizieq.drinkshop.Retrofit.RetrofitClient;
@@ -14,12 +15,13 @@ import java.util.List;
 
 public class Common {
 
-    public static final String BASE_URL = "http://192.168.0.111/drinkshop/";
+    public static final String BASE_URL = "http://192.168.1.5/drinkshop/";
 
     public static final String TOPPING_MENU_ID = "7";
 
     public static User currentUser = null;
     public static Category currentCategory = null;
+    public static Order currentOrder = null;
 
     public static List<Drink> toppingList = new ArrayList<>();
 

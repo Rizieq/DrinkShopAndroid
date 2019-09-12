@@ -85,11 +85,7 @@ public class ShowOrderActivity extends AppCompatActivity {
                         }
                     }));
         }
-        else
-        {
-            Toast.makeText(this, "Please Login Again !", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+
     }
 
     private void displayOrder(List<Order> orders) {

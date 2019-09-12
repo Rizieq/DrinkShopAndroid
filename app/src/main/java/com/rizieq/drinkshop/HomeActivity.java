@@ -587,11 +587,25 @@ public class HomeActivity extends AppCompatActivity
         }
         else if (id == R.id.nav_favorite)
         {
-            startActivity(new Intent(this,FavoriteListActivity.class));
+            if (Common.currentUser != null)
+            {
+                startActivity(new Intent(this,FavoriteListActivity.class));
+            }
+            else
+            {
+                Toast.makeText(this, "Please login to use this Features", Toast.LENGTH_SHORT).show();
+            }
         }
         else if (id == R.id.nav_show_orders)
         {
-            startActivity(new Intent(this,ShowOrderActivity.class));
+            if (Common.currentUser != null)
+            {
+                startActivity(new Intent(HomeActivity.this,ShowOrderActivity.class));
+            }
+            else
+            {
+                Toast.makeText(this, "Please login to use this Features", Toast.LENGTH_SHORT).show();
+            }
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

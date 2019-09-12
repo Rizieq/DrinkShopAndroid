@@ -286,8 +286,8 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
         // Set Data
         Picasso.with(context).load(drinkList.get(i).Link).into(img_product_dialog);
         txt_product_dialog.setText(new StringBuilder(drinkList.get(i).Name).append(" x")
-                .append(Common.sizeOfCup == 0 ? " Size M" : " Size L")
-                .append(number));
+                .append(number)
+                .append(Common.sizeOfCup == 0 ? " Size M" : " Size L"));
 
 
         txt_ice.setText(new StringBuilder("Ice: ").append(Common.ice).append("%").toString());
