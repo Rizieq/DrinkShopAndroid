@@ -27,6 +27,7 @@ import com.facebook.accountkit.AccountKitLoginResult;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.rizieq.drinkshop.Model.CheckUserResponse;
 import com.rizieq.drinkshop.Model.User;
@@ -128,6 +129,9 @@ public class MainActivity extends AppCompatActivity {
                                                                 user.getBrithdate(),
                                                                 user.getAvatarUrl());
 
+
+                                                        //Update Token
+                                                        updateTokenToFirebase();
                                                         startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                                         finish(); //Close MainActivity
                                                     }
@@ -223,7 +227,8 @@ public class MainActivity extends AppCompatActivity {
                                                                         user.getBrithdate(),
                                                                         user.getAvatarUrl());
 
-
+                                                                //Update Token
+                                                                updateTokenToFirebase();
                                                                 startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                                                 finish(); //Close MainActivity
                                                             }
@@ -325,6 +330,8 @@ public class MainActivity extends AppCompatActivity {
                                             user.getBrithdate(),
                                             user.getAvatarUrl());
 
+                                    //Update Token
+                                    updateTokenToFirebase();
                                     // start new Activity
                                     startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                     finish();
@@ -382,5 +389,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         isBackButtonClicked = false;
         super.onResume();
+    }
+
+    private void updateTokenToFirebase() {
+        IDrinkShopAPI mService = Common.getAPI();
+        mService.updateToken(Common.currentUser.getPhone(), FirebaseInstanceId.getInstance().getToken(),"0")
+                .enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        Log.d("DEBUG",response.body());
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        Log.d("DEBUG",t.getMessage());
+                    }
+                });
     }
 }

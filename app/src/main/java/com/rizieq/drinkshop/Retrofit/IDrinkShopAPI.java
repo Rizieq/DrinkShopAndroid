@@ -29,9 +29,9 @@ public interface IDrinkShopAPI {
     @FormUrlEncoded
     @POST("register.php")
     Call<User> registerNewUser(@Field("phone") String phone,
-                              @Field("name") String name,
-                              @Field("address") String address,
-                              @Field("brithdate") String brithdate);
+                               @Field("name") String name,
+                               @Field("address") String address,
+                               @Field("brithdate") String brithdate);
 
     @FormUrlEncoded
     @POST("getdrink.php")
@@ -67,7 +67,10 @@ public interface IDrinkShopAPI {
     Observable<List<Order>> getOrder(@Field("userPhone") String userPhone,
                                      @Field("status") String status);
 
-
-
+    @FormUrlEncoded
+    @POST("updatetoken.php")
+    Call<String> updateToken(@Field("phone") String phone,
+                             @Field("token") String token,
+                             @Field("isServerToken") String isServerToken);
 
 }
