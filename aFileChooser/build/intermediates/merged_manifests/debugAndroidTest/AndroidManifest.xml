@@ -14,7 +14,7 @@
         android:targetPackage="com.ipaulpro.afilechooser.test" />
 
     <application
-        android:appComponentFactory="android.support.v4.app.CoreComponentFactory"
+        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:debuggable="true" >
         <uses-library android:name="android.test.runner" />
     </application>

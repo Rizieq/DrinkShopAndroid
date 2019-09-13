@@ -6,6 +6,10 @@
     <group android:checkableBehavior="single">
 
         <item
+            android:id="@+id/nav_nearby_store"
+            android:icon="@drawable/ic_store_black_24dp"
+            android:title="Nearby Store" />
+        <item
             android:id="@+id/nav_favorite"
             android:icon="@drawable/ic_favorite_white_24dp"
             android:title="Favorite" />
