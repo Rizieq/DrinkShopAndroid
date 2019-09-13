@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,8 +10,7 @@
 
     
     <android.support.v7.widget.CardView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
@@ -79,6 +78,8 @@
     </android.support.v7.widget.CardView>
     
     <TextView
+        android:layout_below="@+id/cardView"
+        android:id="@+id/txt_title"
         android:text="Detail : "
         android:layout_margin="8dp"
         android:textSize="30sp"
@@ -86,8 +87,19 @@
         android:layout_height="wrap_content" />
 
     <android.support.v7.widget.RecyclerView
+        android:layout_below="@+id/txt_title"
         android:id="@+id/recycler_order_detail"
+        android:layout_above="@id/btn_cancel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
 
-</LinearLayout>
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_alignParentBottom="true"/>
+
+
+</RelativeLayout>

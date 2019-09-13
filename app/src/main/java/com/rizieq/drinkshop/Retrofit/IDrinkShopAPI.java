@@ -73,4 +73,9 @@ public interface IDrinkShopAPI {
                              @Field("token") String token,
                              @Field("isServerToken") String isServerToken);
 
+    @FormUrlEncoded
+    @POST("cancelorder.php")
+    Call<String> cancelOrder(@Field("orderId") String orderId,
+                             @Field("userPhone") String userPhone);
+
 }
