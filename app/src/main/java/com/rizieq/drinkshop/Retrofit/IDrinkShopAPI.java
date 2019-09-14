@@ -5,6 +5,7 @@ import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.CheckUserResponse;
 import com.rizieq.drinkshop.Model.Drink;
 import com.rizieq.drinkshop.Model.Order;
+import com.rizieq.drinkshop.Model.Store;
 import com.rizieq.drinkshop.Model.User;
 
 import java.util.List;
@@ -77,5 +78,10 @@ public interface IDrinkShopAPI {
     @POST("cancelorder.php")
     Call<String> cancelOrder(@Field("orderId") String orderId,
                              @Field("userPhone") String userPhone);
+
+    @FormUrlEncoded
+    @POST("getnearbystore.php")
+    Observable<List<Store>> getNearbyStore(@Field("lat") String lat,
+                                           @Field("lng") String lng);
 
 }
