@@ -99,7 +99,8 @@
         android:layout_height="wrap_content"
         android:text="Cancel"
         style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true"
+        android:visibility="invisible"/>
 
 
 </RelativeLayout>

@@ -28,7 +28,10 @@ import com.facebook.accountkit.AccountKitLoginResult;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.rengwuxian.materialedittext.MaterialEditText;
 import com.rizieq.drinkshop.Model.CheckUserResponse;
 import com.rizieq.drinkshop.Model.User;
@@ -132,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                                                         //Update Token
-                                                        updateTokenToFirebase();
+                                                        updateTokenToServer();
                                                         startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                                         finish(); //Close MainActivity
                                                     }
@@ -229,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                                                                         user.getAvatarUrl());
 
                                                                 //Update Token
-                                                                updateTokenToFirebase();
+                                                                updateTokenToServer();
                                                                 startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                                                 finish(); //Close MainActivity
                                                             }
@@ -332,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
                                             user.getAvatarUrl());
 
                                     //Update Token
-                                    updateTokenToFirebase();
+                                    updateTokenToServer();
                                     // start new Activity
                                     startActivity(new Intent(MainActivity.this, HomeActivity.class));
                                     finish();
@@ -392,18 +395,34 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    private void updateTokenToFirebase() {
-        IDrinkShopAPI mService = Common.getAPI();
-        mService.updateToken(Common.currentUser.getPhone(), FirebaseInstanceId.getInstance().getToken(),"0")
-                .enqueue(new Callback<String>() {
+    private void updateTokenToServer() {
+        FirebaseInstanceId.getInstance()
+                .getInstanceId()
+                .addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
                     @Override
-                    public void onResponse(Call<String> call, Response<String> response) {
-                        Log.d("DEBUG",response.body());
-                    }
+                    public void onSuccess(InstanceIdResult instanceIdResult) {
 
+                        IDrinkShopAPI mService = Common.getAPI();
+                        mService.updateToken(Common.currentUser.getPhone(),
+                                instanceIdResult.getToken()
+                                ,"0")
+                                .enqueue(new Callback<String>() {
+                                    @Override
+                                    public void onResponse(Call<String> call, Response<String> response) {
+                                        Log.d("DEBUG",response.body());
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<String> call, Throwable t) {
+                                        Log.d("DEBUG",t.getMessage());
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
                     @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        Log.d("DEBUG",t.getMessage());
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

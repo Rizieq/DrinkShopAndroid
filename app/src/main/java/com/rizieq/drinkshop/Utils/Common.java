@@ -7,7 +7,9 @@ import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
 import com.rizieq.drinkshop.Model.Order;
 import com.rizieq.drinkshop.Model.User;
+import com.rizieq.drinkshop.Retrofit.FCMClient;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
+import com.rizieq.drinkshop.Retrofit.IFCMService;
 import com.rizieq.drinkshop.Retrofit.RetrofitClient;
 
 import java.util.ArrayList;
@@ -38,6 +40,14 @@ public class Common {
     public static EDMTRoomDatabase edmtRoomDatabase;
     public static CartRepository cartRepository;
     public static FavoriteRepository favoriteRepository;
+
+
+    private static final String FCM_API = "https://fcm.googleapis.com/";
+
+    public static IFCMService getGetFCMService()
+    {
+        return FCMClient.getClient(FCM_API).create(IFCMService.class);
+    }
 
     public static IDrinkShopAPI getAPI()
     {

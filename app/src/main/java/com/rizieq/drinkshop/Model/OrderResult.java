@@ -1,22 +1,40 @@
 package com.rizieq.drinkshop.Model;
 
-public class Order {
+public class OrderResult {
+    public int OrderId;
+    public String OrderDate;
+    public int OrderStatus;
+    public float OrderPrice;
+    public String OrderDetail,OrderComment,OrderAddress,UserPhone;
 
-    private long OrderId;
-    private int OrderStatus;
-    private float OrderPrice;
-    private String OrderDetail,OrderComment,OrderAddress,UserPhone;
-
-    public Order() {
-
+    public OrderResult() {
     }
 
-    public long getOrderId() {
+    public OrderResult(int orderId, String orderDate, int orderStatus, float orderPrice, String orderDetail, String orderComment, String orderAddress, String userPhone) {
+        OrderId = orderId;
+        OrderDate = orderDate;
+        OrderStatus = orderStatus;
+        OrderPrice = orderPrice;
+        OrderDetail = orderDetail;
+        OrderComment = orderComment;
+        OrderAddress = orderAddress;
+        UserPhone = userPhone;
+    }
+
+    public int getOrderId() {
         return OrderId;
     }
 
-    public void setOrderId(long orderId) {
+    public void setOrderId(int orderId) {
         OrderId = orderId;
+    }
+
+    public String getOrderDate() {
+        return OrderDate;
+    }
+
+    public void setOrderDate(String orderDate) {
+        OrderDate = orderDate;
     }
 
     public int getOrderStatus() {
@@ -59,11 +77,11 @@ public class Order {
         OrderAddress = orderAddress;
     }
 
-    public String getOrderPhone() {
+    public String getUserPhone() {
         return UserPhone;
     }
 
-    public void setOrderPhone(String userPhone) {
+    public void setUserPhone(String userPhone) {
         UserPhone = userPhone;
     }
 }

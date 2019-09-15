@@ -25,7 +25,12 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.rizieq.drinkshop.Adapter.CartAdapter;
 import com.rizieq.drinkshop.Database.ModelDB.Cart;
+import com.rizieq.drinkshop.Model.DataMessage;
+import com.rizieq.drinkshop.Model.MyResponse;
+import com.rizieq.drinkshop.Model.OrderResult;
+import com.rizieq.drinkshop.Model.Token;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
+import com.rizieq.drinkshop.Retrofit.IFCMService;
 import com.rizieq.drinkshop.Utils.Common;
 import com.rizieq.drinkshop.Utils.RecyclerItemTouchHelper;
 import com.rizieq.drinkshop.Utils.RecyclerItemTouchHelperListener;
@@ -33,6 +38,7 @@ import com.rizieq.drinkshop.Utils.RecyclerItemTouchHelperListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -218,25 +224,72 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
             String orderDetail = new Gson().toJson(carts);
 
             mService.submitOrder(sumPrice,orderDetail,orderComment,orderAddress,map.get(sm.KEY_PHONE))
-                    .enqueue(new Callback<String>() {
+                    .enqueue(new Callback<OrderResult>() {
                         @Override
-                        public void onResponse(Call<String> call, Response<String> response) {
-
-                            Toast.makeText(CartActivity.this, "Order Submit", Toast.LENGTH_SHORT).show();
-
-                            // Clear Cart
-                            Common.cartRepository.emptyCart();
-                            finish();
+                        public void onResponse(Call<OrderResult> call, Response<OrderResult> response) {
+                            sendNotificationToServer(response.body());
                         }
 
                         @Override
-                        public void onFailure(Call<String> call, Throwable t) {
-
-                            Log.d("ERROR ",t.getMessage());
-
+                        public void onFailure(Call<OrderResult> call, Throwable t) {
+                            Toast.makeText(CartActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         }
+    }
+
+    private void sendNotificationToServer(final OrderResult orderResult) {
+        // GET SERVER TOKEN
+        mService.getToken("server_app_01","1")
+                .enqueue(new Callback<Token>() {
+                    @Override
+                    public void onResponse(Call<Token> call, Response<Token> response) {
+                        // WHEN we have token, just add notification to this token
+                        Map<String,String> contentSend = new HashMap<>();
+                        contentSend.put("title","EDMTDev");
+                        contentSend.put("message","You have new order "+orderResult.getOrderId());
+                        DataMessage dataMessage = new DataMessage();
+                        if (response.body() != null)
+                            dataMessage.setTo(response.body().getToken());
+                        dataMessage.setData(contentSend);
+
+                        IFCMService ifcmService = Common.getGetFCMService();
+                        ifcmService.sendNotification(dataMessage)
+                                .enqueue(new Callback<MyResponse>() {
+                                    @Override
+                                    public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                                        if (response.code() == 200)
+                                        {
+                                            if (response.body().success == 1)
+                                            {
+                                                Toast.makeText(CartActivity.this, "Thank you , Order Place", Toast.LENGTH_SHORT).show();
+
+                                                //Clear Cart
+                                                Common.cartRepository.emptyCart();
+                                                finish();
+                                            }
+                                            else 
+                                            {
+                                                Toast.makeText(CartActivity.this, "Send Notification Failed !", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<MyResponse> call, Throwable t) {
+                                        Toast.makeText(CartActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onFailure(Call<Token> call, Throwable t) {
+
+                        Toast.makeText(CartActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
     }
 
 

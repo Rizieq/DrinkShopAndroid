@@ -5,7 +5,9 @@ import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.CheckUserResponse;
 import com.rizieq.drinkshop.Model.Drink;
 import com.rizieq.drinkshop.Model.Order;
+import com.rizieq.drinkshop.Model.OrderResult;
 import com.rizieq.drinkshop.Model.Store;
+import com.rizieq.drinkshop.Model.Token;
 import com.rizieq.drinkshop.Model.User;
 
 import java.util.List;
@@ -57,11 +59,11 @@ public interface IDrinkShopAPI {
 
     @FormUrlEncoded
     @POST("submitorder.php")
-    Call<String> submitOrder(@Field("price") float price,
-                             @Field("orderDetail") String orderDetail,
-                             @Field("comment") String comment,
-                             @Field("address") String address,
-                             @Field("phone") String phone);
+    Call<OrderResult> submitOrder(@Field("price") float price,
+                                  @Field("orderDetail") String orderDetail,
+                                  @Field("comment") String comment,
+                                  @Field("address") String address,
+                                  @Field("phone") String phone);
 
     @FormUrlEncoded
     @POST("getorder.php")
@@ -83,5 +85,10 @@ public interface IDrinkShopAPI {
     @POST("getnearbystore.php")
     Observable<List<Store>> getNearbyStore(@Field("lat") String lat,
                                            @Field("lng") String lng);
+
+    @FormUrlEncoded
+    @POST("gettoken.php")
+    Call<Token> getToken(@Field("phone") String phone,
+                         @Field("isServerToken") String isServerToken);
 
 }

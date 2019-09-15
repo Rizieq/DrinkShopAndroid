@@ -26,7 +26,7 @@ import retrofit2.Response;
 
 public class OrderDetailActivity extends AppCompatActivity {
 
-    TextView txt_order_id,txt_order_price,txt_order_address,txt_order_comment,txt_order_status;
+    TextView txt_order_id, txt_order_price, txt_order_address, txt_order_comment, txt_order_status;
     Button btn_cancel;
     RecyclerView recycler_order_detail;
 
@@ -50,15 +50,24 @@ public class OrderDetailActivity extends AppCompatActivity {
         txt_order_address.setText(Common.currentOrder.getOrderAddress());
         txt_order_comment.setText(Common.currentOrder.getOrderComment());
         txt_order_status.setText(new StringBuilder("Order Status : ").append(Common.convertToCodeStatus(Common.currentOrder.getOrderStatus())));
-
+        Log.d("ORDER_PLACE_STATUS ", String.valueOf(Common.currentOrder.getOrderStatus()));
 
         btn_cancel = findViewById(R.id.btn_cancel);
+
+        if (Common.currentOrder.getOrderStatus() != -1) {
+            btn_cancel.setVisibility(View.VISIBLE);
+        } else {
+            btn_cancel.setVisibility(View.INVISIBLE);
+        }
+
+
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cancelOrder();
             }
         });
+
 
         displayOrderDetail();
     }
@@ -79,9 +88,10 @@ public class OrderDetailActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<String> call, Throwable t) {
 
-                        Log.d("DEBUG",t.getMessage());
+                        Log.d("DEBUG", t.getMessage());
                     }
                 });
+
     }
 
     private void displayOrderDetail() {
@@ -89,7 +99,8 @@ public class OrderDetailActivity extends AppCompatActivity {
         // TODO AMBIL DATA JSON LALU DI TAMPILKAN KE ANDROID
 
         List<Cart> orderDetail = new Gson().fromJson(Common.currentOrder.getOrderDetail(),
-                new TypeToken<List<Cart>>(){}.getType());
-        recycler_order_detail.setAdapter(new OrderDetailAdapter(this,orderDetail));
+                new TypeToken<List<Cart>>() {
+                }.getType());
+        recycler_order_detail.setAdapter(new OrderDetailAdapter(this, orderDetail));
     }
 }

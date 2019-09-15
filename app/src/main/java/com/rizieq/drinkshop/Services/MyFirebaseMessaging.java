@@ -6,18 +6,33 @@ import android.content.Context;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.rizieq.drinkshop.R;
+import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
+import com.rizieq.drinkshop.Utils.Common;
 import com.rizieq.drinkshop.Utils.NotificationHelper;
 
 import java.util.Map;
 import java.util.Random;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MyFirebaseMessaging extends FirebaseMessagingService {
+
+    @Override
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        if (Common.currentUser != null)
+            updateTokenToFirebase(s);
+    }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -66,5 +81,23 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
         helper.getManager().notify(new Random().nextInt(),builder.build());
 
+    }
+
+    private void updateTokenToFirebase(String token) {
+        IDrinkShopAPI mService = Common.getAPI();
+        mService.updateToken(Common.currentUser.getPhone(),
+                token,
+                "0")
+                .enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        Log.d("DEBUG",response.toString());
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                        Log.d("DEBUG",t.getMessage());
+                    }
+                });
     }
 }
