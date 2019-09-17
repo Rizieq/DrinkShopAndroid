@@ -63,7 +63,8 @@ public interface IDrinkShopAPI {
                                   @Field("orderDetail") String orderDetail,
                                   @Field("comment") String comment,
                                   @Field("address") String address,
-                                  @Field("phone") String phone);
+                                  @Field("phone") String phone,
+                                  @Field("paymentMethod") String paymentMethod);
 
     @FormUrlEncoded
     @POST("getorder.php")

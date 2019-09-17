@@ -43,4 +43,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="2"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rdi_credit_card"
+            android:layout_weight="1"
+            android:text="Credit Cart"
+            android:checked="true"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <RadioButton
+            android:id="@+id/rdi_cod"
+            android:layout_weight="1"
+            android:text="Cash On Delivery"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </RadioGroup>
+
 </LinearLayout>

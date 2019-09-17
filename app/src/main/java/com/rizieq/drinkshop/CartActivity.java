@@ -63,20 +63,20 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
     CompositeDisposable compositeDisposable;
 
+    String orderComment, orderAddress;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-        if (Common.cartRepository.sumName() != null){
-            Log.d("RESPONSE_NAME ",Common.cartRepository.sumName());    
-        }
-        else 
-        {
+        if (Common.cartRepository.sumName() != null) {
+            Log.d("RESPONSE_NAME ", Common.cartRepository.sumName());
+        } else {
             Toast.makeText(this, "Must Add To Cart !", Toast.LENGTH_SHORT).show();
         }
-        
-        
+
 
         sm = new SessionManager(CartActivity.this);
 
@@ -99,7 +99,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
             }
         });
 
-        ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0,ItemTouchHelper.LEFT,this);
+        ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
         new ItemTouchHelper(simpleCallback).attachToRecyclerView(recycler_cart);
 
         loadCartItems();
@@ -116,7 +116,6 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
             // CREATE Dialog
 
 
-
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Submit Order");
 
@@ -127,6 +126,9 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
             final RadioButton rdi_user_address = submit_order_layout.findViewById(R.id.rdi_user_address);
             final RadioButton rdi_other_address = submit_order_layout.findViewById(R.id.rdi_other_address);
+
+            final RadioButton rdi_credit_card = submit_order_layout.findViewById(R.id.rdi_credit_card);
+            final RadioButton rdi_cod = submit_order_layout.findViewById(R.id.rdi_cod);
 
             rdi_user_address.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -156,43 +158,75 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
                     // todo ganti sum price dengan sumName
 
-                    final String orderComment = edt_comment.getText().toString();
-                    final String orderAddress;
+                    if (rdi_credit_card.isChecked()) {
 
-                    if (rdi_user_address.isChecked())
-                        orderAddress = map.get(sm.KEY_ADDRESS);
-                    else if (rdi_other_address.isChecked())
-                        orderAddress = edt_other_address.getText().toString();
-                    else
-                        orderAddress = "";
+                        orderComment = edt_comment.getText().toString();
+
+                        if (rdi_user_address.isChecked())
+                            orderAddress = map.get(sm.KEY_ADDRESS);
+                        else if (rdi_other_address.isChecked())
+                            orderAddress = edt_other_address.getText().toString();
+                        else
+                            orderAddress = "";
 
 
-                    // Submit Order
-                    compositeDisposable.add(
-                            Common.cartRepository.getCartItems()
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribeOn(Schedulers.io())
-                                    .subscribe(new Consumer<List<Cart>>() {
-                                        @Override
-                                        public void accept(List<Cart> carts) throws Exception {
+                        // Submit Order
+                        compositeDisposable.add(
+                                Common.cartRepository.getCartItems()
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribeOn(Schedulers.io())
+                                        .subscribe(new Consumer<List<Cart>>() {
+                                            @Override
+                                            public void accept(List<Cart> carts) throws Exception {
 
-                                            if (!TextUtils.isEmpty(orderAddress))
-                                                sendOrderToServer(Common.cartRepository.sumPrice(),
-                                                        carts,
-                                                        orderComment, orderAddress);
+                                                if (!TextUtils.isEmpty(orderAddress))
+                                                    sendOrderToServer(Common.cartRepository.sumPrice(),
+                                                            carts,
+                                                            orderComment, orderAddress,"Braintree");
 
-                                            else
-                                                Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
-                                        }
-                                    })
-                    );
+                                                else
+                                                    Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                        );
+                    }
+                    else if (rdi_cod.isChecked())
+                    {
+
+                        orderComment = edt_comment.getText().toString();
+
+                        if (rdi_user_address.isChecked())
+                            orderAddress = map.get(sm.KEY_ADDRESS);
+                        else if (rdi_other_address.isChecked())
+                            orderAddress = edt_other_address.getText().toString();
+                        else
+                            orderAddress = "";
+
+                        // Submit Order
+                        compositeDisposable.add(
+                                Common.cartRepository.getCartItems()
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribeOn(Schedulers.io())
+                                        .subscribe(new Consumer<List<Cart>>() {
+                                            @Override
+                                            public void accept(List<Cart> carts) throws Exception {
+
+                                                if (!TextUtils.isEmpty(orderAddress))
+                                                    sendOrderToServer(Common.cartRepository.sumPrice(),
+                                                            carts,
+                                                            orderComment, orderAddress,"COD");
+
+                                                else
+                                                    Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                        );
+                    }
                 }
             });
 
             builder.show();
-        }
-        else
-        {
+        } else {
             // Request Login
 
             AlertDialog.Builder builder = new AlertDialog.Builder(CartActivity.this);
@@ -207,7 +241,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    startActivity(new Intent(CartActivity.this,MainActivity.class));
+                    startActivity(new Intent(CartActivity.this, MainActivity.class));
                     finish();
                 }
             }).show();
@@ -215,15 +249,14 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
     }
 
-    private void sendOrderToServer(float sumPrice, List<Cart> carts, String orderComment, String orderAddress) {
+    private void sendOrderToServer(float sumPrice, List<Cart> carts, String orderComment, String orderAddress, String paymentMethod) {
         final HashMap<String, String> map = sm.getDataLogin();
 
-        if (carts.size() > 0)
-        {
+        if (carts.size() > 0) {
 
             String orderDetail = new Gson().toJson(carts);
 
-            mService.submitOrder(sumPrice,orderDetail,orderComment,orderAddress,map.get(sm.KEY_PHONE))
+            mService.submitOrder(sumPrice, orderDetail, orderComment, orderAddress, map.get(sm.KEY_PHONE), paymentMethod)
                     .enqueue(new Callback<OrderResult>() {
                         @Override
                         public void onResponse(Call<OrderResult> call, Response<OrderResult> response) {
@@ -232,7 +265,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
                         @Override
                         public void onFailure(Call<OrderResult> call, Throwable t) {
-                            Toast.makeText(CartActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CartActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         }
@@ -240,14 +273,14 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
     private void sendNotificationToServer(final OrderResult orderResult) {
         // GET SERVER TOKEN
-        mService.getToken("server_app_01","1")
+        mService.getToken("server_app_01", "1")
                 .enqueue(new Callback<Token>() {
                     @Override
                     public void onResponse(Call<Token> call, Response<Token> response) {
                         // WHEN we have token, just add notification to this token
-                        Map<String,String> contentSend = new HashMap<>();
-                        contentSend.put("title","EDMTDev");
-                        contentSend.put("message","You have new order "+orderResult.getOrderId());
+                        Map<String, String> contentSend = new HashMap<>();
+                        contentSend.put("title", "EDMTDev");
+                        contentSend.put("message", "You have new order " + orderResult.getOrderId());
                         DataMessage dataMessage = new DataMessage();
                         if (response.body() != null)
                             dataMessage.setTo(response.body().getToken());
@@ -258,18 +291,14 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
                                 .enqueue(new Callback<MyResponse>() {
                                     @Override
                                     public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
-                                        if (response.code() == 200)
-                                        {
-                                            if (response.body().success == 1)
-                                            {
+                                        if (response.code() == 200) {
+                                            if (response.body().success == 1) {
                                                 Toast.makeText(CartActivity.this, "Thank you , Order Place", Toast.LENGTH_SHORT).show();
 
                                                 //Clear Cart
                                                 Common.cartRepository.emptyCart();
                                                 finish();
-                                            }
-                                            else 
-                                            {
+                                            } else {
                                                 Toast.makeText(CartActivity.this, "Send Notification Failed !", Toast.LENGTH_SHORT).show();
                                             }
                                         }
@@ -277,7 +306,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
                                     @Override
                                     public void onFailure(Call<MyResponse> call, Throwable t) {
-                                        Toast.makeText(CartActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(CartActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                 });
                     }
@@ -285,7 +314,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
                     @Override
                     public void onFailure(Call<Token> call, Throwable t) {
 
-                        Toast.makeText(CartActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CartActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -297,21 +326,21 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 
         compositeDisposable.add(
                 Common.cartRepository.getCartItems()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(new Consumer<List<Cart>>() {
-                    @Override
-                    public void accept(List<Cart> carts) throws Exception {
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(new Consumer<List<Cart>>() {
+                            @Override
+                            public void accept(List<Cart> carts) throws Exception {
 
-                        displayCartItems(carts);
-                    }
-                })
+                                displayCartItems(carts);
+                            }
+                        })
         );
     }
 
     private void displayCartItems(List<Cart> carts) {
         cartList = carts;
-        cartAdapter = new CartAdapter(this,carts);
+        cartAdapter = new CartAdapter(this, carts);
         recycler_cart.setAdapter(cartAdapter);
     }
 
@@ -344,7 +373,6 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
 */
 
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -358,8 +386,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
 
-        if (viewHolder instanceof CartAdapter.CartViewHolder)
-        {
+        if (viewHolder instanceof CartAdapter.CartViewHolder) {
             String name = cartList.get(viewHolder.getAdapterPosition()).name;
 
             final Cart deleteItem = cartList.get(viewHolder.getAdapterPosition());
@@ -372,12 +399,12 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
             Common.cartRepository.deleteCartItem(deleteItem);
 
 
-            Snackbar snackbar = Snackbar.make(rootLayout,new StringBuilder(name).append(" removed from Favorite List").toString(),
+            Snackbar snackbar = Snackbar.make(rootLayout, new StringBuilder(name).append(" removed from Favorite List").toString(),
                     Snackbar.LENGTH_LONG);
             snackbar.setAction("UNDO", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    cartAdapter.restoreItem(deleteItem,deleteIndex);
+                    cartAdapter.restoreItem(deleteItem, deleteIndex);
                     Common.cartRepository.insertToCart(deleteItem);
 
                 }
