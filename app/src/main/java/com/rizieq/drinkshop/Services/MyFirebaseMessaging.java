@@ -2,7 +2,9 @@ package com.rizieq.drinkshop.Services;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -15,6 +17,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.rizieq.drinkshop.R;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
+import com.rizieq.drinkshop.ShowOrderActivity;
 import com.rizieq.drinkshop.Utils.Common;
 import com.rizieq.drinkshop.Utils.NotificationHelper;
 
@@ -49,6 +52,10 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
     private void sendNotification(RemoteMessage remoteMessage) {
         // GET Information from Message
+
+        Intent intent = new Intent(getBaseContext(), ShowOrderActivity.class);
+        PendingIntent contextIntent = PendingIntent.getActivity(getBaseContext(),0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+
         Map<String,String> data = remoteMessage.getData();
         String title = data.get("title");
         String message = data.get("message");
@@ -59,6 +66,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)
+                .setContentIntent(contextIntent)
                 .setSound(defaultSoundUri);
 
         NotificationManager noti = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
