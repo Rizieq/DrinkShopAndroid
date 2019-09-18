@@ -63,6 +63,7 @@ public class FavoriteListActivity extends AppCompatActivity implements RecyclerI
         loadFavoritesItem();
     }
 
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

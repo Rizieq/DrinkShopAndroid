@@ -131,7 +131,8 @@ public class MainActivity extends AppCompatActivity {
                                                                 user.getName(),
                                                                 user.getAddress(),
                                                                 user.getBrithdate(),
-                                                                user.getAvatarUrl());
+                                                                user.getAvatarUrl(),
+                                                                user.getPassword());
 
 
                                                         //Update Token
@@ -229,7 +230,8 @@ public class MainActivity extends AppCompatActivity {
                                                                         user.getName(),
                                                                         user.getAddress(),
                                                                         user.getBrithdate(),
-                                                                        user.getAvatarUrl());
+                                                                        user.getAvatarUrl(),
+                                                                        user.getPassword());
 
                                                                 //Update Token
                                                                 updateTokenToServer();
@@ -332,7 +334,8 @@ public class MainActivity extends AppCompatActivity {
                                             user.getName(),
                                             user.getAddress(),
                                             user.getBrithdate(),
-                                            user.getAvatarUrl());
+                                            user.getAvatarUrl(),
+                                            user.getPassword());
 
                                     //Update Token
                                     updateTokenToServer();

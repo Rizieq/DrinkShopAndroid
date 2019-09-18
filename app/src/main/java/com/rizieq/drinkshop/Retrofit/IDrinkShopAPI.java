@@ -92,4 +92,9 @@ public interface IDrinkShopAPI {
     Call<Token> getToken(@Field("phone") String phone,
                          @Field("isServerToken") String isServerToken);
 
+    @FormUrlEncoded
+    @POST("loginuser.php")
+    Call<User> loginUser(@Field("name") String name,
+                         @Field("password") String password);
+
 }

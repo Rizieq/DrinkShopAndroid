@@ -365,7 +365,8 @@ public class HomeActivity extends AppCompatActivity
                                                                 user.getName(),
                                                                 user.getAddress(),
                                                                 user.getBrithdate(),
-                                                                user.getAvatarUrl());
+                                                                user.getAvatarUrl(),
+                                                                user.getPassword());
 
                                                         Toast.makeText(HomeActivity.this, responUpload, Toast.LENGTH_SHORT).show();
 
