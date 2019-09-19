@@ -8,9 +8,18 @@ public class User {
     private String brithdate;
     private String error_msg;
     private String avatarUrl;
+    private String password;
 
     public User() {
 
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getPhone() {

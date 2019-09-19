@@ -46,6 +46,16 @@
                 android:layout_height="wrap_content"
                 app:met_floatingLabel="highlight"
                 />
+
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/edt_password"
+                android:hint="Password"
+                android:textSize="18sp"
+                android:inputType="text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:met_floatingLabel="highlight"
+                />
         </LinearLayout>
 
         <Button

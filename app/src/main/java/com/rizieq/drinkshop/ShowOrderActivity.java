@@ -1,6 +1,7 @@
 package com.rizieq.drinkshop;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -75,6 +76,7 @@ public class ShowOrderActivity extends AppCompatActivity {
 
     private void loadOrder(String statusCode) {
         if (Common.currentUser != null) {
+            Log.d("READ_DATA_SHOW ",Common.currentUser.getName());
             compositeDisposable.add(mService.getOrder(Common.currentUser.getPhone(), statusCode)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())

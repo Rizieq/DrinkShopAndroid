@@ -34,7 +34,8 @@ public interface IDrinkShopAPI {
     Call<User> registerNewUser(@Field("phone") String phone,
                                @Field("name") String name,
                                @Field("address") String address,
-                               @Field("brithdate") String brithdate);
+                               @Field("brithdate") String brithdate,
+                               @Field("password") String password);
 
     @FormUrlEncoded
     @POST("getdrink.php")
@@ -95,6 +96,6 @@ public interface IDrinkShopAPI {
     @FormUrlEncoded
     @POST("loginuser.php")
     Call<User> loginUser(@Field("name") String name,
-                         @Field("password") String password);
+                               @Field("password") String password);
 
 }

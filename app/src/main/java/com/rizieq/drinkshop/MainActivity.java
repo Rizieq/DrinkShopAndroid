@@ -131,7 +131,8 @@ public class MainActivity extends AppCompatActivity {
                                                                 user.getName(),
                                                                 user.getAddress(),
                                                                 user.getBrithdate(),
-                                                                user.getAvatarUrl());
+                                                                user.getAvatarUrl(),
+                                                                user.getPassword());
 
 
                                                         //Update Token
@@ -229,7 +230,8 @@ public class MainActivity extends AppCompatActivity {
                                                                         user.getName(),
                                                                         user.getAddress(),
                                                                         user.getBrithdate(),
-                                                                        user.getAvatarUrl());
+                                                                        user.getAvatarUrl(),
+                                                                        user.getPassword());
 
                                                                 //Update Token
                                                                 updateTokenToServer();
@@ -282,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
         final MaterialEditText edt_name = (MaterialEditText) register_layout.findViewById(R.id.edt_name);
         final MaterialEditText edt_address = (MaterialEditText) register_layout.findViewById(R.id.edt_address);
         final MaterialEditText edt_brithdate = (MaterialEditText) register_layout.findViewById(R.id.edt_brithdate);
+        final MaterialEditText edt_password = (MaterialEditText) register_layout.findViewById(R.id.edt_password);
 
         Button btn_register = (Button) register_layout.findViewById(R.id.btn_register);
 
@@ -309,6 +312,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Please enter your name", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                if (TextUtils.isEmpty(edt_password.getText().toString())) {
+                    Toast.makeText(MainActivity.this, "Please enter your password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 final AlertDialog waitingDialog = new SpotsDialog(MainActivity.this);
                 waitingDialog.show();
@@ -316,7 +323,8 @@ public class MainActivity extends AppCompatActivity {
                 mService.registerNewUser(phone,
                         edt_name.getText().toString(),
                         edt_address.getText().toString(),
-                        edt_brithdate.getText().toString())
+                        edt_brithdate.getText().toString(),
+                        edt_password.getText().toString())
                         .enqueue(new Callback<User>() {
                             @Override
                             public void onResponse(Call<User> call, Response<User> response) {
@@ -332,7 +340,8 @@ public class MainActivity extends AppCompatActivity {
                                             user.getName(),
                                             user.getAddress(),
                                             user.getBrithdate(),
-                                            user.getAvatarUrl());
+                                            user.getAvatarUrl(),
+                                            user.getPassword());
 
                                     //Update Token
                                     updateTokenToServer();
