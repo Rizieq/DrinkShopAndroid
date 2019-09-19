@@ -2,48 +2,47 @@ package com.rizieq.drinkshop.Model;
 
 public class User {
 
-    private String Phone;
-    private String Address;
-    private String Name;
-    private String Brithdate;
+    private String phone;
+    private String address;
+    private String name;
+    private String brithdate;
     private String error_msg;
     private String avatarUrl;
-    private String Password;
 
     public User() {
 
     }
 
     public String getPhone() {
-        return Phone;
+        return phone;
     }
 
     public void setPhone(String phone) {
-        Phone = phone;
+        this.phone = phone;
     }
 
     public String getAddress() {
-        return Address;
+        return address;
     }
 
     public void setAddress(String address) {
-        Address = address;
+        this.address = address;
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        Name = name;
+        this.name = name;
     }
 
     public String getBrithdate() {
-        return Brithdate;
+        return brithdate;
     }
 
     public void setBrithdate(String brithdate) {
-        Brithdate = brithdate;
+        this.brithdate = brithdate;
     }
 
     public String getError_msg() {
@@ -60,13 +59,5 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
-    }
-
-    public String getPassword() {
-        return Password;
-    }
-
-    public void setPassword(String password) {
-        Password = password;
     }
 }

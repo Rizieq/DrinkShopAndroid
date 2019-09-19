@@ -264,7 +264,7 @@ public class HomeActivity extends AppCompatActivity
                                     {
 
                                         // If user not exits on Database, just make login
-                                        startActivity(new Intent(HomeActivity.this,MainActivity.class));
+                                        startActivity(new Intent(HomeActivity.this, MainActivity.class));
                                         finish();
                                     }
                                 }
@@ -365,8 +365,7 @@ public class HomeActivity extends AppCompatActivity
                                                                 user.getName(),
                                                                 user.getAddress(),
                                                                 user.getBrithdate(),
-                                                                user.getAvatarUrl(),
-                                                                user.getPassword());
+                                                                user.getAvatarUrl());
 
                                                         Toast.makeText(HomeActivity.this, responUpload, Toast.LENGTH_SHORT).show();
 
@@ -504,7 +503,7 @@ public class HomeActivity extends AppCompatActivity
         cart_icon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this,CartActivity.class));
+                startActivity(new Intent(HomeActivity.this, CartActivity.class));
             }
         });
 
@@ -538,7 +537,7 @@ public class HomeActivity extends AppCompatActivity
         if (id == R.id.cart_menu) {
             return true;
         } else if (id == R.id.search_menu) {
-            startActivity(new Intent(HomeActivity.this,SearchActivity.class));
+            startActivity(new Intent(HomeActivity.this, SearchActivity.class));
             return true;
         }
 
@@ -589,7 +588,7 @@ public class HomeActivity extends AppCompatActivity
         {
             if (Common.currentUser != null)
             {
-                startActivity(new Intent(this,FavoriteListActivity.class));
+                startActivity(new Intent(this, FavoriteListActivity.class));
             }
             else
             {
@@ -600,7 +599,7 @@ public class HomeActivity extends AppCompatActivity
         {
             if (Common.currentUser != null)
             {
-                startActivity(new Intent(HomeActivity.this,ShowOrderActivity.class));
+                startActivity(new Intent(HomeActivity.this, ShowOrderActivity.class));
             }
             else
             {
@@ -609,7 +608,7 @@ public class HomeActivity extends AppCompatActivity
         }
         else if (id == R.id.nav_nearby_store)
         {
-           startActivity(new Intent(HomeActivity.this,NearbyStore.class));
+           startActivity(new Intent(HomeActivity.this, NearbyStore.class));
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
