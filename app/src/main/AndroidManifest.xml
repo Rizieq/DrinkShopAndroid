@@ -42,7 +42,8 @@
         <activity android:name=".CartActivity" />
         <activity android:name=".DrinkActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".HomeActivity" />
+        <activity android:name=".LoginActivity" />
+
 
         <meta-data
             android:name="com.facebook.accountkit.ApplicationName"
@@ -56,7 +57,7 @@
 
         <activity android:name="com.facebook.accountkit.ui.AccountKitActivity" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".HomeActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
             <intent-filter>

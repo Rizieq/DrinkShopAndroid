@@ -1,6 +1,8 @@
 package com.rizieq.drinkshop;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -63,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
         txt_daftar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this,MainActivity.class));
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
             }
         });
 
@@ -76,11 +78,13 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<User> call, Response<User> response) {
 
-                        if (response.body() != null) {
+
+                        User user = response.body();
+                        if (user.getError_msg() == null) {
 
 
                             Common.currentUser = response.body();
-                            User user = response.body();
+
                             sm.storeLogin(user.getPhone(),
                                     user.getName(),
                                     user.getAddress(),
@@ -88,43 +92,36 @@ public class LoginActivity extends AppCompatActivity {
                                     user.getAvatarUrl(),
                                     user.getPassword());
 
-                            getData();
 
-                            Toast.makeText(LoginActivity.this, "Berhasil", Toast.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this, "Login Successfully", Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                            finish();
 
 
                         } else {
                             Toast.makeText(LoginActivity.this, "Username and Password Can't Found!", Toast.LENGTH_SHORT).show();
                         }
+
                     }
 
                     @Override
                     public void onFailure(Call<User> call, Throwable t) {
 
+                        Toast.makeText(LoginActivity.this, "" + t.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.d("ERROR_DATA ", t.getMessage());
                     }
                 });
 
     }
 
-    private void getData() {
 
-        HashMap<String, String> map = sm.getDataLogin();
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
 
-        if (Common.currentUser != null) {
-
-
-            String data = Common.currentUser.getPhone();
-            Log.d("READ_DATA_CURRENT ", data);
-            Log.d("READ_DATA_SESSION ", map.get(sm.KEY_PHONE));
-
-
-        } else {
-            Log.d("READ_DATA_ERROR ", "Kosong");
-            Toast.makeText(this, "Kosong", Toast.LENGTH_SHORT).show();
-        }
-
+        finishAffinity();
+        finish();
     }
-
-
 }
+
+

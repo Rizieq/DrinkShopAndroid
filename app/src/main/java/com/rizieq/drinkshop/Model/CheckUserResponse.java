@@ -2,19 +2,19 @@ package com.rizieq.drinkshop.Model;
 
 public class CheckUserResponse {
 
-    private boolean exits;
+    private String exists;
     private String error_msg;
 
     public CheckUserResponse() {
 
     }
 
-    public boolean isExits() {
-        return exits;
+    public String getExists() {
+        return exists;
     }
 
-    public void setExits(boolean exits) {
-        this.exits = exits;
+    public void setExists(String exists) {
+        this.exists = exists;
     }
 
     public String getError_msg() {

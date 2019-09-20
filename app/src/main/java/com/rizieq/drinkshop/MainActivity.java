@@ -1,7 +1,10 @@
+
 package com.rizieq.drinkshop;
+
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -50,130 +53,52 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 1000;
-    private static final int REQUEST_PERMISIION = 1001;
-    Button btn_continue;
+
+    MaterialEditText edt_name, edt_address, edt_brithdate, edt_password, edt_repeat_password;
+    Button btn_register;
 
     IDrinkShopAPI mService;
-    private SessionManager sm;
+    SessionManager sm;
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISIION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                    Toast.makeText(this, "Permisiion Granted", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(this, "Permisiion Denied", Toast.LENGTH_SHORT).show();
-            }
-            break;
-            default:
-                break;
-        }
-    }
+    String name, address, brithdate, password, repeat_password, phone_data;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-            }, REQUEST_PERMISIION);
 
         mService = Common.getAPI();
-        sm = new SessionManager(MainActivity.this);
+        sm = new SessionManager(this);
 
-        btn_continue = findViewById(R.id.btn_continue);
-        btn_continue.setOnClickListener(new View.OnClickListener() {
+        edt_name = (MaterialEditText) findViewById(R.id.edt_name);
+        edt_address = (MaterialEditText) findViewById(R.id.edt_address);
+        edt_brithdate = (MaterialEditText) findViewById(R.id.edt_brithdate);
+        edt_password = (MaterialEditText) findViewById(R.id.edt_password);
+        edt_repeat_password = (MaterialEditText) findViewById(R.id.edt_repeat_password);
+
+
+        btn_register = (Button) findViewById(R.id.btn_register);
+        edt_brithdate.addTextChangedListener(new PatternedTextWatcher("####-##-##"));
+
+        startLoginPage(LoginType.PHONE);
+
+
+        btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                name = edt_name.getText().toString();
+                address = edt_address.getText().toString();
+                brithdate = edt_brithdate.getText().toString();
+                password = edt_password.getText().toString();
+                repeat_password = edt_repeat_password.getText().toString();
+                loginUser(address, brithdate, name, password, repeat_password, phone_data);
 
-                startLoginPage(LoginType.PHONE);
+
             }
         });
-
-        // Check Session
-        if (AccountKit.getCurrentAccessToken() != null) {
-            final AlertDialog alertDialog = new SpotsDialog(MainActivity.this);
-            alertDialog.show();
-            alertDialog.setMessage("Please Waiting...");
-            // Auto login
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                @Override
-                public void onSuccess(final Account account) {
-
-                    mService.checkUserExits(account.getPhoneNumber().toString())
-                            .enqueue(new Callback<CheckUserResponse>() {
-                                @Override
-                                public void onResponse(Call<CheckUserResponse> call, Response<CheckUserResponse> response) {
-                                    CheckUserResponse userResponse = response.body();
-
-                                    if (userResponse.isExits()) {
-
-                                        // Fetch Information
-
-                                        mService.getUserInformation(account.getPhoneNumber().toString())
-                                                .enqueue(new Callback<User>() {
-                                                    @Override
-                                                    public void onResponse(Call<User> call, Response<User> response) {
-
-                                                        // If User already exits , Just start new Activity
-                                                        alertDialog.dismiss();
-
-                                                        Log.d("RESPONSE_1", "adsahdohasdas");
-                                                        Common.currentUser = response.body();
-
-                                                        User user = response.body();
-                                                        sm.storeLogin(user.getPhone(),
-                                                                user.getName(),
-                                                                user.getAddress(),
-                                                                user.getBrithdate(),
-                                                                user.getAvatarUrl(),
-                                                                user.getPassword());
-
-
-                                                        //Update Token
-                                                        updateTokenToServer();
-                                                        startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                                                        finish(); //Close MainActivity
-                                                    }
-
-                                                    @Override
-                                                    public void onFailure(Call<User> call, Throwable t) {
-                                                        Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                                                    }
-                                                });
-
-
-                                    } else {
-                                        // Else , Need Register
-                                        alertDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, "Register Lagi", Toast.LENGTH_LONG).show();
-
-
-                                        showRegisterDialog(account.getPhoneNumber().toString());
-
-                                    }
-                                }
-
-                                @Override
-                                public void onFailure(Call<CheckUserResponse> call, Throwable t) {
-
-                                }
-                            });
-                }
-
-                @Override
-                public void onError(AccountKitError accountKitError) {
-                    Log.d("ERROR", accountKitError.getErrorType().getMessage());
-                }
-            });
-
-        }
-
     }
 
     private void startLoginPage(LoginType loginType) {
@@ -194,63 +119,37 @@ public class MainActivity extends AppCompatActivity {
             if (result.getError() != null) {
                 Toast.makeText(this, "" + result.getError().getErrorType(), Toast.LENGTH_SHORT).show();
             } else if (result.wasCancelled()) {
-                Toast.makeText(this, "Cancel", Toast.LENGTH_SHORT).show();
+                Log.d("READ_DATA_CANCEL ", String.valueOf(result.wasCancelled()));
             } else {
                 if (result.getAccessToken() != null) {
-                    final AlertDialog alertDialog = new SpotsDialog(MainActivity.this);
-                    alertDialog.show();
-                    alertDialog.setMessage("Please Waiting...");
-                    // Get User and check exits on Server
+
+
                     AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
                         @Override
-                        public void onSuccess(final Account account) {
+                        public void onSuccess(Account account) {
 
+                            phone_data = String.valueOf(account.getPhoneNumber());
+
+                            Log.d("DATA_PHONE ", phone_data);
                             mService.checkUserExits(account.getPhoneNumber().toString())
                                     .enqueue(new Callback<CheckUserResponse>() {
                                         @Override
                                         public void onResponse(Call<CheckUserResponse> call, Response<CheckUserResponse> response) {
-                                            CheckUserResponse userResponse = response.body();
-                                            if (userResponse.isExits()) {
 
-                                                // Fetch Information
-
-                                                mService.getUserInformation(account.getPhoneNumber().toString())
-                                                        .enqueue(new Callback<User>() {
+                                            CheckUserResponse checkUserResponse = response.body();
+                                            if (checkUserResponse.getExists() != null) {
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                                builder.setTitle("Opps Phone has been registed !")
+                                                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                                                             @Override
-                                                            public void onResponse(Call<User> call, Response<User> response) {
-
-
-                                                                // If User already exits , Just start new Activity
-                                                                alertDialog.dismiss();
-
-                                                                Log.d("RESPONSE_2 ", "dsahdaushduhas");
-
-                                                                User user = response.body();
-                                                                sm.storeLogin(user.getPhone(),
-                                                                        user.getName(),
-                                                                        user.getAddress(),
-                                                                        user.getBrithdate(),
-                                                                        user.getAvatarUrl(),
-                                                                        user.getPassword());
-
-                                                                //Update Token
-                                                                updateTokenToServer();
-                                                                startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                                                                finish(); //Close MainActivity
-                                                            }
-
-                                                            @Override
-                                                            public void onFailure(Call<User> call, Throwable t) {
-                                                                Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                                                                finish();
                                                             }
                                                         });
-
-
+                                                builder.show();
                                             } else {
-                                                // Else , Need Register
-                                                alertDialog.dismiss();
-
-                                                showRegisterDialog(account.getPhoneNumber().toString());
+                                                Log.d("onResponse_error_message ", checkUserResponse.getError_msg());
 
                                             }
                                         }
@@ -258,13 +157,17 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void onFailure(Call<CheckUserResponse> call, Throwable t) {
 
+                                            Log.d("READ_DATA_FAILURE ", t.getMessage());
                                         }
                                     });
+
+
                         }
 
                         @Override
                         public void onError(AccountKitError accountKitError) {
-                            Log.d("ERROR", accountKitError.getErrorType().getMessage());
+
+                            Log.d("READ_DATA_ERROR_ACCOUNTKIT2 ", accountKitError.getErrorType().getMessage());
                         }
                     });
                 }
@@ -272,99 +175,92 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showRegisterDialog(final String phone) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("REGISTER");
+    private void loginUser(final String address, final String brithdate, final String name, final String password, String repeat_password, final String phone) {
 
 
-        LayoutInflater inflater = this.getLayoutInflater();
-        View register_layout = inflater.inflate(R.layout.register_layout, null);
+        Log.d("READ_DATA_ADDRESS ", address);
+        if (TextUtils.isEmpty(address)) {
+            Toast.makeText(MainActivity.this, "Please enter your address", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(brithdate)) {
+            Toast.makeText(MainActivity.this, "Please enter your brithdate", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(name)) {
+            Toast.makeText(MainActivity.this, "Please enter your name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(password)) {
+            Toast.makeText(MainActivity.this, "Please enter your password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(repeat_password)) {
+            Toast.makeText(MainActivity.this, "Please enter your repeat password", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        final MaterialEditText edt_name = (MaterialEditText) register_layout.findViewById(R.id.edt_name);
-        final MaterialEditText edt_address = (MaterialEditText) register_layout.findViewById(R.id.edt_address);
-        final MaterialEditText edt_brithdate = (MaterialEditText) register_layout.findViewById(R.id.edt_brithdate);
-        final MaterialEditText edt_password = (MaterialEditText) register_layout.findViewById(R.id.edt_password);
 
-        Button btn_register = (Button) register_layout.findViewById(R.id.btn_register);
+        if (repeat_password.equals(password)) {
 
-        edt_brithdate.addTextChangedListener(new PatternedTextWatcher("####-##-##"));
+            final AlertDialog alertDialog = new SpotsDialog(MainActivity.this);
+            alertDialog.show();
+            alertDialog.setMessage("Please Waiting...");
+            mService.registerNewUser(phone, name, address, brithdate, password)
+                    .enqueue(new Callback<User>() {
+                        @Override
+                        public void onResponse(Call<User> call, Response<User> response) {
 
-        builder.setView(register_layout);
-        final AlertDialog dialog = builder.create();
-        // Event
-        btn_register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                            final User user = response.body();
+                            if (TextUtils.isEmpty(user.getError_msg())) {
 
-                dialog.dismiss();
+                                mService.getUserInformation(password)
+                                        .enqueue(new Callback<User>() {
+                                            @Override
+                                            public void onResponse(Call<User> call, Response<User> response) {
+
+                                                alertDialog.dismiss();
+
+                                                Common.currentUser = user;
+                                                sm.storeLogin(user.getPhone(),
+                                                        user.getName(),
+                                                        user.getAddress(),
+                                                        user.getBrithdate(),
+                                                        user.getAvatarUrl(),
+                                                        user.getPassword());
+
+                                                Toast.makeText(MainActivity.this, "Register Successfully", Toast.LENGTH_SHORT).show();
+                                                startActivity(new Intent(MainActivity.this, HomeActivity.class));
+                                                finish();
+
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<User> call, Throwable t) {
+                                                alertDialog.dismiss();
+                                                Log.d("READ_DATA_FAILURE ", t.getMessage());
+                                            }
+                                        });
 
 
-                if (TextUtils.isEmpty(edt_address.getText().toString())) {
-                    Toast.makeText(MainActivity.this, "Please enter your address", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(edt_brithdate.getText().toString())) {
-                    Toast.makeText(MainActivity.this, "Please enter your brithdate", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(edt_name.getText().toString())) {
-                    Toast.makeText(MainActivity.this, "Please enter your name", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (TextUtils.isEmpty(edt_password.getText().toString())) {
-                    Toast.makeText(MainActivity.this, "Please enter your password", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                final AlertDialog waitingDialog = new SpotsDialog(MainActivity.this);
-                waitingDialog.show();
-                waitingDialog.setMessage("Please Waiting...");
-                mService.registerNewUser(phone,
-                        edt_name.getText().toString(),
-                        edt_address.getText().toString(),
-                        edt_brithdate.getText().toString(),
-                        edt_password.getText().toString())
-                        .enqueue(new Callback<User>() {
-                            @Override
-                            public void onResponse(Call<User> call, Response<User> response) {
-                                waitingDialog.dismiss();
-                                User user = response.body();
-                                if (TextUtils.isEmpty(user.getError_msg())) {
-                                    Toast.makeText(MainActivity.this, "User Register Successfuly", Toast.LENGTH_SHORT).show();
-                                    Common.currentUser = response.body();
-                                    Log.d("NAME RESPON ", response.body().getName());
-                                    Log.d("RESPONSE_3", "dasddasdasdasd");
-
-                                    sm.storeLogin(user.getPhone(),
-                                            user.getName(),
-                                            user.getAddress(),
-                                            user.getBrithdate(),
-                                            user.getAvatarUrl(),
-                                            user.getPassword());
-
-                                    //Update Token
-                                    updateTokenToServer();
-                                    // start new Activity
-                                    startActivity(new Intent(MainActivity.this, HomeActivity.class));
-                                    finish();
-                                }
-
+                            } else {
+                                alertDialog.dismiss();
+                                Log.d("ERROR_DATA_MSG ", user.getError_msg());
+                                Toast.makeText(MainActivity.this, "" + user.getError_msg(), Toast.LENGTH_SHORT).show();
                             }
 
-                            @Override
-                            public void onFailure(Call<User> call, Throwable t) {
-                                waitingDialog.dismiss();
+                        }
 
-                            }
-                        });
-            }
-
-        });
-
-
-        dialog.show();
-
+                        @Override
+                        public void onFailure(Call<User> call, Throwable t) {
+                            alertDialog.dismiss();
+                            Log.d("ERROR_DATA_FAILRE ", t.getMessage());
+                        }
+                    });
+        } else {
+            Log.d("READ_DATA_PASSWORD ", repeat_password + " = " + password);
+            edt_repeat_password.setError("Password is different !");
+        }
     }
 
     private void printKeyHash() {
@@ -386,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Exit Application when click BACK Button
 
-    boolean isBackButtonClicked = false;
+   /* boolean isBackButtonClicked = true;
 
     @Override
     public void onBackPressed() {
@@ -402,37 +298,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         isBackButtonClicked = false;
         super.onResume();
-    }
+    }*/
 
-    private void updateTokenToServer() {
-        FirebaseInstanceId.getInstance()
-                .getInstanceId()
-                .addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-                    @Override
-                    public void onSuccess(InstanceIdResult instanceIdResult) {
 
-                        IDrinkShopAPI mService = Common.getAPI();
-                        mService.updateToken(Common.currentUser.getPhone(),
-                                instanceIdResult.getToken()
-                                ,"0")
-                                .enqueue(new Callback<String>() {
-                                    @Override
-                                    public void onResponse(Call<String> call, Response<String> response) {
-                                        Log.d("DEBUG",response.body());
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<String> call, Throwable t) {
-                                        Log.d("DEBUG",t.getMessage());
-                                    }
-                                });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
 }
+
+
+
+

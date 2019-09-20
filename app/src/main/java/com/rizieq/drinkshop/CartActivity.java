@@ -241,7 +241,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    startActivity(new Intent(CartActivity.this, MainActivity.class));
+                    startActivity(new Intent(CartActivity.this, LoginActivity.class));
                     finish();
                 }
             }).show();

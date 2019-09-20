@@ -1,9 +1,11 @@
 package com.rizieq.drinkshop;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,10 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,9 +36,13 @@ import com.facebook.accountkit.Account;
 import com.facebook.accountkit.AccountKit;
 import com.facebook.accountkit.AccountKitCallback;
 import com.facebook.accountkit.AccountKitError;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.ipaulpro.afilechooser.utils.FileUtils;
 import com.nex3z.notificationbadge.NotificationBadge;
 import com.rizieq.drinkshop.Adapter.CategoryAdapter;
@@ -71,6 +79,8 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, UploadCallBack {
 
+    private static final int REQUEST_CODE = 1000;
+    private static final int REQUEST_PERMISIION = 1001;
     private static final int PICK_FILE_REQUEST = 1222;
     TextView txt_name, txt_phone;
     SessionManager sm;
@@ -95,10 +105,31 @@ public class HomeActivity extends AppCompatActivity
     CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_PERMISIION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, "Permisiion Granted", Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(this, "Permisiion Denied", Toast.LENGTH_SHORT).show();
+            }
+            break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Toolbar toolbar = findViewById(R.id.toolbar);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            }, REQUEST_PERMISIION);
 
         mService = Common.getAPI();
 
@@ -109,6 +140,8 @@ public class HomeActivity extends AppCompatActivity
         lst_menu.setHasFixedSize(true);
 
         sliderLayout = (SliderLayout) findViewById(R.id.slider);
+
+
 
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -201,102 +234,54 @@ public class HomeActivity extends AppCompatActivity
         // Init SQLITE Room Database
         initDB();
 
-        // IF user already loged, just login again (Session still live)
-        /*checkSessionLogin(); */
+        if (Common.currentUser != null){
+
+            updateTokenToServer();
+        }
+        else 
+        {
+            Toast.makeText(this, "Gagal Update Token", Toast.LENGTH_SHORT).show();
+        }
+
 
         sm.checkLogin();
     }
 
-    private void checkSessionLogin() {
-        if (AccountKit.getCurrentAccessToken() != null){
+    private void updateTokenToServer() {
+        FirebaseInstanceId.getInstance()
+                .getInstanceId()
+                .addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+                    @Override
+                    public void onSuccess(InstanceIdResult instanceIdResult) {
 
-
-            swipeRefreshLayout.setRefreshing(true);
-
-            // Check exits User on Server (MYSQL)
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                @Override
-                public void onSuccess(final Account account) {
-                    mService.checkUserExits(account.getPhoneNumber().toString())
-                            .enqueue(new Callback<CheckUserResponse>() {
-                                @Override
-                                public void onResponse(Call<CheckUserResponse> call, Response<CheckUserResponse> response) {
-                                    CheckUserResponse userResponse = response.body();
-                                    if (userResponse.isExits()){
-
-
-                                        // Request Information of current User
-                                        mService.getUserInformation(account.getPhoneNumber().toString())
-                                                .enqueue(new Callback<User>() {
-                                                    @Override
-                                                    public void onResponse(Call<User> call, Response<User> response) {
-
-                                                        // TODO refresh informasi user saat swipe refresh di gunakan
-                                                        HashMap<String, String> map = sm.getDataLogin();
-                                                        if (Common.currentUser != null){
-                                                            swipeRefreshLayout.setRefreshing(false);
-
-                                                            // Set Info User
-                                                            txt_name.setText(map.get(sm.KEY_NAME));
-                                                            txt_phone.setText(map.get(sm.KEY_PHONE));
-
-
-                                                            // Set Avatar
-                                                            if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL))) {
-                                                                Picasso.with(getApplicationContext())
-                                                                        .load(new StringBuilder(Common.BASE_URL)
-                                                                                .append("user_avatar/")
-                                                                                .append(map.get(sm.KEY_AVATAR_URL)).toString())
-                                                                        .into(img_avatar);
-                                                            }
-
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    public void onFailure(Call<User> call, Throwable t) {
-                                                        swipeRefreshLayout.setRefreshing(false);
-                                                        Log.d("ERRO#_3 ",t.getMessage());
-                                                    }
-                                                });
+                        IDrinkShopAPI mService = Common.getAPI();
+                        
+                        Log.d("GET_PHONE ",Common.currentUser.getPhone());
+                        mService.updateToken(Common.currentUser.getPhone(),
+                                instanceIdResult.getToken()
+                                , "0")
+                                .enqueue(new Callback<String>() {
+                                    @Override
+                                    public void onResponse(Call<String> call, Response<String> response) {
+                                        Log.d("DEBUG", response.body());
                                     }
-                                    else
-                                    {
 
-                                        // If user not exits on Database, just make login
-                                        startActivity(new Intent(HomeActivity.this, MainActivity.class));
-                                        finish();
+                                    @Override
+                                    public void onFailure(Call<String> call, Throwable t) {
+                                        Log.d("DEBUG", t.getMessage());
                                     }
-                                }
-
-                                @Override
-                                public void onFailure(Call<CheckUserResponse> call, Throwable t) {
-
-                                    swipeRefreshLayout.setRefreshing(false);
-                                    Log.d("ERROR_2 ",t.getMessage());
-                                }
-                            });
-                }
-
-                @Override
-                public void onError(AccountKitError accountKitError) {
-
-                    swipeRefreshLayout.setRefreshing(false);
-                    Log.d("ERROR_3 ",accountKitError.getErrorType().getMessage());
-
-                }
-            });
-
-        }
-        else
-        {
-
-            // Saat akun belum login maka akan logout langsung
-            sm.logout();
-            sm.checkLogin();
-            finish();
-        }
+                                });
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(HomeActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
+
+
 
 
     private void chooseImage() {
@@ -489,7 +474,8 @@ public class HomeActivity extends AppCompatActivity
                 return;
             }
             this.isBackButtonClicked = true;
-            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+            finishAffinity();
         }
     }
 
@@ -564,8 +550,8 @@ public class HomeActivity extends AppCompatActivity
 
                     sm.logout();
                     sm.checkLogin();
-                    finish();
-                    /*// Clear all Activity
+
+                  /*  // Clear all Activity
                     Intent intent = new Intent(HomeActivity.this,MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 

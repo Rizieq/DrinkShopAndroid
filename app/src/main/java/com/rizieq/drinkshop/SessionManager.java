@@ -70,6 +70,7 @@ public class SessionManager {
         editor.clear();
         editor.commit();
 
+
     }
 
     private boolean Login()
