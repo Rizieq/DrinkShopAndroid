@@ -51,7 +51,17 @@ public class OrderDetailActivity extends AppCompatActivity {
         txt_order_id.setText(new StringBuilder("#").append(Common.currentOrder.getOrderId()));
         txt_order_price.setText(new StringBuilder("$").append(Common.currentOrder.getOrderPrice()));
         txt_order_address.setText(Common.currentOrder.getOrderAddress());
-        txt_order_comment.setText(Common.currentOrder.getOrderComment());
+        if (Common.currentOrder.getOrderComment() != null &&
+        !Common.currentOrder.getOrderComment().isEmpty()){
+
+            txt_order_comment.setText(new StringBuilder("Comment : ")
+            .append(Common.currentOrder.getOrderComment()));
+        }
+        else
+        {
+            txt_order_comment.setText(new StringBuilder("Comment : ")
+                    .append("None"));
+        }
         txt_order_status.setText(new StringBuilder("Order Status : ").append(Common.convertToCodeStatus(Common.currentOrder.getOrderStatus())));
         Log.d("ORDER_PLACE_STATUS ", String.valueOf(Common.currentOrder.getOrderStatus()));
 

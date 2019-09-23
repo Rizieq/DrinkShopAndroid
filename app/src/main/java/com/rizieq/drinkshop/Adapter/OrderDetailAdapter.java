@@ -50,9 +50,23 @@ public class OrderDetailAdapter extends RecyclerView.Adapter<OrderDetailAdapter.
                 .append(cartList.get(i).size == 0 ? " Size M":" Size L"));
 
         cartViewHolder.txt_sugar_ice.setText(new StringBuilder("Sugar: ")
-                .append(cartList.get(i).sugar).append("%").append("\n")
+                .append(cartList.get(i).sugar).append("%").append(", ")
                 .append("Ice: ").append(cartList.get(i).ice)
                 .append("%").toString());
+
+        if (cartList.get(i).toppingExtras != null &&
+        !cartList.get(i).toppingExtras.isEmpty()){
+            String topping_format = cartList.get(i).toppingExtras.replaceAll("\\n",",");
+            topping_format = topping_format.substring(0,topping_format.length() - 1);
+
+            cartViewHolder.txt_topping.setText(new StringBuilder("Topping : ")
+            .append(topping_format));
+        }
+        else
+        {
+            cartViewHolder.txt_topping.setText(new StringBuilder("Topping : ")
+            .append("None"));
+        }
 
 
     }
@@ -66,7 +80,7 @@ public class OrderDetailAdapter extends RecyclerView.Adapter<OrderDetailAdapter.
     {
 
         ImageView img_product;
-        TextView txt_product_name, txt_sugar_ice, txt_price;
+        TextView txt_product_name, txt_sugar_ice, txt_price, txt_topping;
 
 
         public RelativeLayout view_background;
@@ -80,6 +94,7 @@ public class OrderDetailAdapter extends RecyclerView.Adapter<OrderDetailAdapter.
             txt_product_name = itemView.findViewById(R.id.txt_product_name);
             txt_sugar_ice = itemView.findViewById(R.id.txt_sugar_ice);
             txt_price = itemView.findViewById(R.id.txt_price);
+            txt_topping = itemView.findViewById(R.id.txt_topping_extra);
 
 
             view_background = itemView.findViewById(R.id.view_background);
