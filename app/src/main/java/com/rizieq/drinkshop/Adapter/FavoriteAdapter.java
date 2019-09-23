@@ -42,6 +42,13 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
                 .into(favoriteViewHolder.img_product);
         favoriteViewHolder.txt_price.setText(new StringBuilder("$").append(favoriteList.get(i).price).toString());
         favoriteViewHolder.txt_product_name.setText(favoriteList.get(i).name);
+
+        favoriteViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     @Override

@@ -53,6 +53,10 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
         drinkViewHolder.txt_price.setText(new StringBuilder("$").append(drinkList.get(i).Price.toString()));
         drinkViewHolder.txt_drink_name.setText(drinkList.get(i).Name);
 
+        Picasso.with(context)
+                .load(drinkList.get(i).Link)
+                .into(drinkViewHolder.img_product);
+
         // Event Oclick
         drinkViewHolder.btn_add_to_cart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,9 +65,6 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
             }
         });
 
-        Picasso.with(context)
-                .load(drinkList.get(i).Link)
-                .into(drinkViewHolder.img_product);
 
         drinkViewHolder.setItemClickListener(new IItemClickListener() {
             @Override

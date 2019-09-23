@@ -112,7 +112,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
         // map.get(sm.KEY_PHONE)
         // If Kondisi untuk mengetahui apakah user sudah login atau belum
 
-        if (Common.currentUser != null) {
+        if (sm.getDataLogin() != null) {
             // CREATE Dialog
 
 

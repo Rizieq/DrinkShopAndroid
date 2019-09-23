@@ -79,7 +79,7 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, UploadCallBack {
 
-    private static final int REQUEST_CODE = 1000;
+
     private static final int REQUEST_PERMISIION = 1001;
     private static final int PICK_FILE_REQUEST = 1222;
     TextView txt_name, txt_phone;
@@ -142,7 +142,6 @@ public class HomeActivity extends AppCompatActivity
         sliderLayout = (SliderLayout) findViewById(R.id.slider);
 
 
-
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -181,65 +180,63 @@ public class HomeActivity extends AppCompatActivity
         });
 
 
-            // Set Info User
-            txt_name.setText(map.get(sm.KEY_NAME));
-            txt_phone.setText(map.get(sm.KEY_PHONE));
+        // Set Info User
+        txt_name.setText(map.get(sm.KEY_NAME));
+        txt_phone.setText(map.get(sm.KEY_PHONE));
 
 
-            // Set Avatar
-            if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL))) {
-                Picasso.with(this)
-                        .load(new StringBuilder(Common.BASE_URL)
-                                .append("user_avatar/")
-                                .append(map.get(sm.KEY_AVATAR_URL)).toString())
-                        .into(img_avatar);
+        // Set Avatar
+        if (!TextUtils.isEmpty(map.get(sm.KEY_AVATAR_URL))) {
+            Picasso.with(this)
+                    .load(new StringBuilder(Common.BASE_URL)
+                            .append("user_avatar/")
+                            .append(map.get(sm.KEY_AVATAR_URL)).toString())
+                    .into(img_avatar);
+        }
+
+
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+
+                // Get Banner
+                getBannerImage();
+
+                // Get Menu
+                getMenu();
+
+                // Save topping newest Topping List
+                getToppingList();
+
             }
+        });
 
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
 
-            swipeRefreshLayout.post(new Runnable() {
-                @Override
-                public void run() {
+                swipeRefreshLayout.setRefreshing(true);
 
-                    // Get Banner
-                    getBannerImage();
+                // Get Banner
+                getBannerImage();
 
-                    // Get Menu
-                    getMenu();
+                // Get Menu
+                getMenu();
 
-                    // Save topping newest Topping List
-                    getToppingList();
+                // Save topping newest Topping List
+                getToppingList();
 
-                }
-            });
-
-            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-
-                    swipeRefreshLayout.setRefreshing(true);
-
-                    // Get Banner
-                    getBannerImage();
-
-                    // Get Menu
-                    getMenu();
-
-                    // Save topping newest Topping List
-                    getToppingList();
-
-                }
-            });
+            }
+        });
 
 
         // Init SQLITE Room Database
         initDB();
 
-        if (Common.currentUser != null){
+        if (sm.getDataLogin() != null) {
 
             updateTokenToServer();
-        }
-        else 
-        {
+        } else {
             Toast.makeText(this, "Gagal Update Token", Toast.LENGTH_SHORT).show();
         }
 
@@ -255,9 +252,9 @@ public class HomeActivity extends AppCompatActivity
                     public void onSuccess(InstanceIdResult instanceIdResult) {
 
                         IDrinkShopAPI mService = Common.getAPI();
-                        
-                        Log.d("GET_PHONE ",Common.currentUser.getPhone());
-                        mService.updateToken(Common.currentUser.getPhone(),
+                        HashMap<String, String> map = sm.getDataLogin();
+                        Log.d("GET_PHONE ", map.get(sm.KEY_PHONE));
+                        mService.updateToken(map.get(sm.KEY_PHONE),
                                 instanceIdResult.getToken()
                                 , "0")
                                 .enqueue(new Callback<String>() {
@@ -282,31 +279,24 @@ public class HomeActivity extends AppCompatActivity
     }
 
 
-
-
     private void chooseImage() {
 
         // TODO to active FileUtils, we need add aFileChooser module to our project
-        startActivityForResult(Intent.createChooser(FileUtils.createGetContentIntent(),"Select a file"),
+        startActivityForResult(Intent.createChooser(FileUtils.createGetContentIntent(), "Select a file"),
                 PICK_FILE_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK)
-        {
-            if (requestCode ==PICK_FILE_REQUEST)
-            {
-                if (data != null)
-                {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == PICK_FILE_REQUEST) {
+                if (data != null) {
                     selectedFileUri = data.getData();
-                    if (selectedFileUri != null && !selectedFileUri.getPath().isEmpty())
-                    {
+                    if (selectedFileUri != null && !selectedFileUri.getPath().isEmpty()) {
                         img_avatar.setImageURI(selectedFileUri);
                         uploadFile();
-                    }
-                    else
+                    } else
                         Toast.makeText(this, "Cannot upload file to server", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -315,28 +305,27 @@ public class HomeActivity extends AppCompatActivity
 
     private void uploadFile() {
         final HashMap<String, String> map = sm.getDataLogin();
-        if (selectedFileUri != null)
-        {
-            File file = FileUtils.getFile(this,selectedFileUri);
+        if (selectedFileUri != null) {
+            File file = FileUtils.getFile(this, selectedFileUri);
             String fileName = new StringBuilder(map.get(sm.KEY_PHONE)) // get phone kalo gk dapet ambil dari session manager
                     .append(FileUtils.getExtension(file.toString()))
                     .toString();
 
-            ProggressRequestBody requestFile = new ProggressRequestBody(file,this);
+            ProggressRequestBody requestFile = new ProggressRequestBody(file, this);
 
-            final MultipartBody.Part body = MultipartBody.Part.createFormData("uploaded_file",fileName,requestFile);
+            final MultipartBody.Part body = MultipartBody.Part.createFormData("uploaded_file", fileName, requestFile);
 
-            final MultipartBody.Part userPhone = MultipartBody.Part.createFormData("phone",map.get(sm.KEY_PHONE));
+            final MultipartBody.Part userPhone = MultipartBody.Part.createFormData("phone", map.get(sm.KEY_PHONE));
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    mService.uploadFile(userPhone,body)
+                    mService.uploadFile(userPhone, body)
                             .enqueue(new Callback<String>() {
                                 @Override
                                 public void onResponse(Call<String> call, Response<String> response) {
 
-                                    if (response.isSuccessful()){
+                                    if (response.isSuccessful()) {
 
                                         final String responUpload = response.body();
 
@@ -360,15 +349,13 @@ public class HomeActivity extends AppCompatActivity
                                                     @Override
                                                     public void onFailure(Call<User> call, Throwable t) {
 
-                                                        Log.d("ONFAILURE_USER_MAIN ",t.getLocalizedMessage());
+                                                        Log.d("ONFAILURE_USER_MAIN ", t.getLocalizedMessage());
                                                         Toast.makeText(HomeActivity.this, "Failed To Save Data", Toast.LENGTH_SHORT).show();
                                                     }
                                                 });
 
 
                                     }
-
-
 
 
                                 }
@@ -463,13 +450,14 @@ public class HomeActivity extends AppCompatActivity
     }
 
     boolean isBackButtonClicked = false;
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if (isBackButtonClicked){
+            if (isBackButtonClicked) {
                 super.onBackPressed();
                 return;
             }
@@ -570,32 +558,20 @@ public class HomeActivity extends AppCompatActivity
             // Show Dialog
             builder.show();
 
-        }
-        else if (id == R.id.nav_favorite)
-        {
-            if (Common.currentUser != null)
-            {
+        } else if (id == R.id.nav_favorite) {
+            if (sm.getDataLogin() != null) {
                 startActivity(new Intent(this, FavoriteListActivity.class));
-            }
-            else
-            {
+            } else {
                 Toast.makeText(this, "Please login to use this Features", Toast.LENGTH_SHORT).show();
             }
-        }
-        else if (id == R.id.nav_show_orders)
-        {
-            if (Common.currentUser != null)
-            {
+        } else if (id == R.id.nav_show_orders) {
+            if (sm.getDataLogin() != null) {
                 startActivity(new Intent(HomeActivity.this, ShowOrderActivity.class));
-            }
-            else
-            {
+            } else {
                 Toast.makeText(this, "Please login to use this Features", Toast.LENGTH_SHORT).show();
             }
-        }
-        else if (id == R.id.nav_nearby_store)
-        {
-           startActivity(new Intent(HomeActivity.this, NearbyStore.class));
+        } else if (id == R.id.nav_nearby_store) {
+            startActivity(new Intent(HomeActivity.this, NearbyStore.class));
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

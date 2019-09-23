@@ -3,6 +3,7 @@ package com.rizieq.drinkshop;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import com.rizieq.drinkshop.Model.Order;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
 import com.rizieq.drinkshop.Utils.Common;
 
+import java.util.HashMap;
 import java.util.List;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -28,6 +30,7 @@ public class ShowOrderActivity extends AppCompatActivity {
     RecyclerView recycler_orders;
     CompositeDisposable compositeDisposable = new CompositeDisposable();
     BottomNavigationView bottomNavigationView;
+    SessionManager sm;
 
 
     @Override
@@ -36,6 +39,7 @@ public class ShowOrderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_show_order);
 
         mService = Common.getAPI();
+        sm = new SessionManager(this);
 
         recycler_orders = findViewById(R.id.recycler_orders);
         recycler_orders.setLayoutManager(new LinearLayoutManager(this));
@@ -75,9 +79,10 @@ public class ShowOrderActivity extends AppCompatActivity {
     }
 
     private void loadOrder(String statusCode) {
-        if (Common.currentUser != null) {
-            Log.d("READ_DATA_SHOW ",Common.currentUser.getName());
-            compositeDisposable.add(mService.getOrder(Common.currentUser.getPhone(), statusCode)
+        HashMap<String,String> map = sm.getDataLogin();
+        if (sm.getDataLogin() != null) {
+            Log.d("READ_DATA_SHOW ",map.get(sm.KEY_PHONE));
+            compositeDisposable.add(mService.getOrder(map.get(sm.KEY_PHONE), statusCode)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribe(new Consumer<List<Order>>() {
@@ -86,6 +91,10 @@ public class ShowOrderActivity extends AppCompatActivity {
                             displayOrder(orders);
                         }
                     }));
+        }
+        else 
+        {
+            Toast.makeText(this, "You Must Login !", Toast.LENGTH_SHORT).show();
         }
 
     }
