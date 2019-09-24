@@ -29,6 +29,7 @@ public class Common {
 
     public static double toppingPrice = 0.0;
     public static List<String> toppingAdded = new ArrayList<>();
+    public static List<String> toppingRemove = new ArrayList<>();
 
     // Hold field
     public static int sizeOfCup = -1; // -1 : no chose (error) , 0 : M , 1 : L

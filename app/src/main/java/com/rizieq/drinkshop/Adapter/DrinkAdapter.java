@@ -115,6 +115,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View itemView = LayoutInflater.from(context)
                 .inflate(R.layout.add_to_cart_layout, null);
+        builder.setCancelable(false);
 
         // View
         ImageView img_product_dialog = itemView.findViewById(R.id.img_cart_product);
@@ -243,7 +244,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
         txt_product_dialog.setText(drinkList.get(i).Name);
 
         builder.setView(itemView);
-        builder.setNegativeButton("ADD TO CART", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("ADD TO CART", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
@@ -266,6 +267,11 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
                 showConfirmDialog(i, txt_count.getNumber());
                 dialog.dismiss();
             }
+        }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
         });
 
         builder.show();
@@ -276,6 +282,7 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View itemView = LayoutInflater.from(context)
                 .inflate(R.layout.confirm_add_to_cart_layout, null);
+        builder.setCancelable(false);
 
         // View
         ImageView img_product_dialog = itemView.findViewById(R.id.img_product);
@@ -301,18 +308,34 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
             price += (3.0 * Double.parseDouble(number));
 
 
+        // kondisi ketika button cancel aktif maka akan menampilkan data baru
 
-        StringBuilder topping_final_comment = new StringBuilder("");
-        for (String line : Common.toppingAdded)
-            topping_final_comment.append(line).append("\n");
+        if (Common.toppingAdded == Common.toppingRemove
+                && Common.toppingAdded != null) {
 
-        txt_topping_extra.setText(topping_final_comment);
+
+            String topping = String.valueOf(Common.toppingRemove);
+            txt_topping_extra.setText(topping);
+            Log.d("showConfirmDialog: ", topping);
+        } else {
+
+            StringBuilder topping_final_comment = new StringBuilder("");
+            for (String line : Common.toppingAdded)
+                topping_final_comment.append(line).append("\n");
+
+            txt_topping_extra.setText(topping_final_comment);
+
+
+            Log.d("showConfirmDialog: ", String.valueOf(topping_final_comment));
+
+        }
+
 
         final double finalPrice = Math.round(price);
 
         txt_product_price.setText(new StringBuilder("$").append(finalPrice));
 
-        builder.setNegativeButton("CONFIRM", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("CONFIRM", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
@@ -343,6 +366,18 @@ public class DrinkAdapter extends RecyclerView.Adapter<DrinkViewHolder> {
                     Toast.makeText(context, ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
 
+            }
+        }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                //
+                String topping = String.valueOf(Common.toppingAdded.removeAll(Common.toppingAdded));
+                txt_topping_extra.setText(topping);
+
+                Log.d("onClicked : ", topping);
+
+                showAddToCartDialog(i);
             }
         });
 

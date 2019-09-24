@@ -102,7 +102,6 @@
                 android:id="@+id/txt_topping_extra"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Milk Cream"
                 android:textSize="16sp"
                 android:textStyle="italic" />
 
