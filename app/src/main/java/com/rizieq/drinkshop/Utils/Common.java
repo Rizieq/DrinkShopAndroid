@@ -6,6 +6,7 @@ import com.rizieq.drinkshop.Database.Local.EDMTRoomDatabase;
 import com.rizieq.drinkshop.Model.Category;
 import com.rizieq.drinkshop.Model.Drink;
 import com.rizieq.drinkshop.Model.Order;
+import com.rizieq.drinkshop.Model.Store;
 import com.rizieq.drinkshop.Model.User;
 import com.rizieq.drinkshop.Retrofit.FCMClient;
 import com.rizieq.drinkshop.Retrofit.IDrinkShopAPI;
@@ -24,6 +25,7 @@ public class Common {
     public static User currentUser = null;
     public static Category currentCategory = null;
     public static Order currentOrder = null;
+    public static Store currentStore = null;
 
     public static List<Drink> toppingList = new ArrayList<>();
 

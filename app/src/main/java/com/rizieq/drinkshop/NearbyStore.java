@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -49,11 +51,12 @@ import io.reactivex.schedulers.Schedulers;
 
 public class NearbyStore extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
+    private GoogleMap mMap, map;
 
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
+
 
     IDrinkShopAPI mService;
     CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -79,6 +82,7 @@ public class NearbyStore extends FragmentActivity implements OnMapReadyCallback 
 
         mService = Common.getAPI();
 
+
         Dexter.withActivity(this)
                 .withPermissions(Manifest.permission.ACCESS_COARSE_LOCATION,
                         Manifest.permission.ACCESS_FINE_LOCATION)
@@ -91,12 +95,14 @@ public class NearbyStore extends FragmentActivity implements OnMapReadyCallback 
 
                             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(NearbyStore.this);
 
+                            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
 
                             //start update location
                             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                                 return;
                             }
-                            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+
+                            Log.d("READ_LOCATION_REQUEST ", String.valueOf(fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper())));
 
                         }
 
@@ -119,9 +125,10 @@ public class NearbyStore extends FragmentActivity implements OnMapReadyCallback 
                 LatLng your_location = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
                 mMap.addMarker(new MarkerOptions().position(your_location).title("Your Location"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(your_location, 17.0f));
+                Log.d("READ_LOCATION_MAP ", String.valueOf(mMap));
 
-
-
+                // TODO COBA UNTUK MENGHENTIKAN AGAR TIDAK GET TERUS MENERUS
+                fusedLocationProviderClient.removeLocationUpdates(locationCallback);
 
 
                 // GET NERBY LOCATION
@@ -131,33 +138,54 @@ public class NearbyStore extends FragmentActivity implements OnMapReadyCallback 
     }
 
     private void getNearbyStore(Location lastLocation) {
-        compositeDisposable.add(mService.getNearbyStore(String.valueOf(lastLocation.getLatitude()),String.valueOf(lastLocation.getLongitude()))
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribeOn(Schedulers.io())
-        .subscribe(new Consumer<List<Store>>() {
-            @Override
-            public void accept(List<Store> stores) throws Exception {
-                for (final Store store:stores)
-                {
-                    LatLng storeLocation = new LatLng(store.getLat(),store.getLng());
+        compositeDisposable.add(mService.getNearbyStore(String.valueOf(lastLocation.getLatitude()), String.valueOf(lastLocation.getLongitude()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new Consumer<List<Store>>() {
+                    @Override
+                    public void accept(final List<Store> stores) throws Exception {
+                        for (final Store store : stores) {
+                            final LatLng storeLocation = new LatLng(store.getLat(), store.getLng());
+                            Marker marker = map.addMarker(new MarkerOptions()
+                                    .position(storeLocation)
+                                    .title(store.getName())
+                                    .snippet(new StringBuilder("Distance: ").append(store.getDistance_in_km()).append(" km").toString())
+                                    .icon(bitmapDescriptorFromVector(getApplicationContext(), R.drawable.ic_action_name)));
+                            marker.setTag(store.getId());
 
-                    mMap.addMarker(new MarkerOptions()
-                    .position(storeLocation)
-                    .title(store.getName())
-                    .snippet(new StringBuilder("Distance: ").append(store.getDistance_in_km()).append(" km").toString())
-                            .icon(bitmapDescriptorFromVector(getApplicationContext(),R.drawable.ic_action_name)));
 
-                }
+                            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                                @Override
+                                public boolean onMarkerClick(Marker marker) {
+                                    Integer clickCount = (Integer) marker.getTag();
 
-            }
-        }, new Consumer<Throwable>() {
-            @Override
-            public void accept(Throwable throwable) throws Exception {
-                Log.d("ERROR",""+throwable.getMessage());
-            }
-        }));
+
+                                    marker.setTag(clickCount);
+
+                                    Common.currentStore = store;
+
+                                    Toast.makeText(NearbyStore.this,
+                                            Common.currentStore.getName() + " has been clicked " + clickCount + " times.", Toast.LENGTH_SHORT).show();
+
+                                    BottomSheetStore bottomSheetStore = new BottomSheetStore();
+                                    bottomSheetStore.show(getSupportFragmentManager(), "bottomSheetStore");
+
+
+                                    return false;
+                                }
+                            });
+
+
+                        }
+
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.d("ERROR", "" + throwable.getMessage());
+                    }
+                }));
     }
-
 
     private void buildLocationRequest() {
         locationRequest = new LocationRequest();
@@ -165,38 +193,21 @@ public class NearbyStore extends FragmentActivity implements OnMapReadyCallback 
         locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(3000);
         locationRequest.setSmallestDisplacement(10f);
+
+
     }
 
-    @Override
-    protected void onPause()  {
-        if (locationCallback != null)
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        super.onPause();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (locationCallback != null) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
-        }
-    }
 
-    @Override
-    protected void onStop() {
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-        compositeDisposable.clear();
-        super.onStop();
-    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        map = googleMap;
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        map.getUiSettings().setZoomControlsEnabled(true);
+
 
     }
 }

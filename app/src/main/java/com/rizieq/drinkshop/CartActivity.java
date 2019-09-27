@@ -182,16 +182,14 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
                                                 if (!TextUtils.isEmpty(orderAddress))
                                                     sendOrderToServer(Common.cartRepository.sumPrice(),
                                                             carts,
-                                                            orderComment, orderAddress,"Braintree");
+                                                            orderComment, orderAddress, "Braintree");
 
                                                 else
                                                     Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
                                             }
                                         })
                         );
-                    }
-                    else if (rdi_cod.isChecked())
-                    {
+                    } else if (rdi_cod.isChecked()) {
 
                         orderComment = edt_comment.getText().toString();
 
@@ -214,7 +212,7 @@ public class CartActivity extends AppCompatActivity implements RecyclerItemTouch
                                                 if (!TextUtils.isEmpty(orderAddress))
                                                     sendOrderToServer(Common.cartRepository.sumPrice(),
                                                             carts,
-                                                            orderComment, orderAddress,"COD");
+                                                            orderComment, orderAddress, "COD");
 
                                                 else
                                                     Toast.makeText(CartActivity.this, "Order address can't null", Toast.LENGTH_SHORT).show();
